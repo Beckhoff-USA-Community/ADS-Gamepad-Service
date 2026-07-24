@@ -4,18 +4,18 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 
 ## Where things stand today
 
-* The Windows application lives in src/AdsGamepadService. It builds with the current .NET SDK but still targets .NET 6, which is out of support. Upgrading it is the first phase below.
+* The Windows application lives in src/AdsGamepadService and targets .NET 10, the current long term support release, with the Beckhoff ADS packages on the 7.0 line.
 * The application registers itself as an ADS server on port 25733. The PLC polls that server every cycle to read controller data and to write rumble commands. This wire format is treated as frozen. Any change to it will be versioned so that existing PLC programs keep working or fail loudly, never silently.
-* Xbox controllers are read through a small C++ helper library in src/XInputNativeLibrary that wraps the Microsoft XInput API. That helper is scheduled for removal so the whole application becomes plain C#.
+* Xbox controllers are read directly from C# through the Microsoft XInput API. The old C++ helper library is gone, so the project needs only the .NET SDK to build.
+* A test suite under tests locks the exact numeric behavior of the controller math, including the deadzone handling and axis mapping the old helper shipped with, so a future change cannot silently alter what the PLC receives.
 * The PLC library sources are under plc. The library keeps its original name, XboxControllerUtilities, so that projects built against earlier releases keep resolving. A carefully managed rename is planned in a later phase.
 * The content under Documentation is the old documentation site. It still refers to the old project names and will be rewritten as the phases below land. Until then, treat it as historical reference.
 
-## Phase 1: Move to current .NET
+## Phase 1: Move to current .NET (complete)
 
-* Retarget the service from .NET 6 to .NET 10, the current long term support release.
-* Update the Beckhoff ADS packages to the 7.0 line, which supports .NET 10.
-* Replace the C++ XInput helper with direct calls from C# and delete the native project. Before the swap, the exact numeric behavior of the current helper will be captured in tests, because details such as deadzone handling and axis mapping are part of how existing machines feel to operate.
-* Bring hosting, shutdown, logging, and error handling up to current .NET patterns.
+* The service was retargeted from .NET 6 to .NET 10 and the Beckhoff ADS packages moved from 6.0 to the 7.0 line.
+* The C++ XInput helper was replaced with direct calls from C# and the native project was deleted. The exact numeric behavior of the old helper was captured in tests first, because details such as deadzone handling and axis mapping are part of how existing machines feel to operate.
+* Hosting, shutdown, logging, and error handling were brought up to current .NET patterns. The service now logs controller connect and disconnect events and restarts cleanly under service recovery if it fails.
 
 ## Phase 2: Run as a Windows service
 
@@ -44,12 +44,12 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 * Structured testing with physical Xbox and PlayStation 5 controllers on real hardware, covering connect, disconnect, battery reporting, rumble, and input accuracy.
 * PlayStation support lands here. The DualSense controller speaks standard HID, and the service gains a second input backend for it.
 
-## Phase 7: Linux support
+## Phase 7: Linux support (stretch goal)
 
 * Beckhoff offers a real time Linux runtime on its newer controllers, and the service should run there as a systemd unit.
 * The repository will gain a directory with build and install instructions so a user can clone the repository, change into that directory, and run a build followed by an install.
 * Controller input on Linux uses the standard evdev and hidraw interfaces, which cover both Xbox and PlayStation pads with mainline kernel drivers.
 
-## Phase 8: TwinCAT/BSD support
+## TwinCAT/BSD
 
-* This is a stretch goal. TwinCAT/BSD is based on FreeBSD, where .NET is available only as a community port. If the .NET route proves too fragile there, the fallback is a small native service built on the open source ADS library that Beckhoff publishes, speaking the same wire format.
+Support for TwinCAT/BSD was considered and set aside. Windows comes first and the Linux runtime is the stretch goal. The wire format is documented well enough that a native service could be built for TwinCAT/BSD on the open source ADS library Beckhoff publishes, if demand appears.
