@@ -15,7 +15,10 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path $PSScriptRoot -Parent
 $packageDir = Join-Path $PSScriptRoot 'AdsGamepadService.Service'
 $stageBin = Join-Path $packageDir 'bin'
-$nuspec = Join-Path $packageDir 'AdsGamepadService.Service.nuspec'
+$nuspecs = @(
+    (Join-Path $packageDir 'AdsGamepadService.Service.nuspec'),
+    (Join-Path $PSScriptRoot 'AdsGamepad.XAR\AdsGamepad.XAR.Workload.nuspec')
+)
 
 if (Test-Path $stageBin) {
     Remove-Item $stageBin -Recurse -Force
@@ -29,28 +32,31 @@ if ($LASTEXITCODE -ne 0) {
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 
 $tcpkg = Get-Command tcpkg -ErrorAction SilentlyContinue
-if ($tcpkg) {
-    & tcpkg pack $nuspec -o $OutputDir
-    if ($LASTEXITCODE -ne 0) {
-        throw "tcpkg pack failed with code $LASTEXITCODE."
-    }
-}
-else {
-    $nuget = Get-Command nuget -ErrorAction SilentlyContinue
-    if (-not $nuget) {
-        throw 'Neither tcpkg nor nuget was found. Install the TwinCAT Package Manager or the nuget CLI.'
-    }
-    & nuget pack $nuspec -OutputDirectory $OutputDir -NoPackageAnalysis
-    if ($LASTEXITCODE -ne 0) {
-        throw "nuget pack failed with code $LASTEXITCODE."
-    }
+$nuget = Get-Command nuget -ErrorAction SilentlyContinue
+if (-not $tcpkg -and -not $nuget) {
+    throw 'Neither tcpkg nor nuget was found. Install the TwinCAT Package Manager or the nuget CLI.'
 }
 
-[xml]$nuspecXml = Get-Content $nuspec
-$packageId = $nuspecXml.package.metadata.id
-$packageVersion = $nuspecXml.package.metadata.version
-$built = Join-Path $OutputDir "$packageId.$packageVersion.nupkg"
-if (-not (Test-Path $built)) {
-    throw "The expected package $built was not produced."
+foreach ($nuspec in $nuspecs) {
+    if ($tcpkg) {
+        & tcpkg pack $nuspec -o $OutputDir
+        if ($LASTEXITCODE -ne 0) {
+            throw "tcpkg pack failed for $nuspec with code $LASTEXITCODE."
+        }
+    }
+    else {
+        & nuget pack $nuspec -OutputDirectory $OutputDir -NoPackageAnalysis
+        if ($LASTEXITCODE -ne 0) {
+            throw "nuget pack failed for $nuspec with code $LASTEXITCODE."
+        }
+    }
+
+    [xml]$nuspecXml = Get-Content $nuspec
+    $packageId = $nuspecXml.package.metadata.id
+    $packageVersion = $nuspecXml.package.metadata.version
+    $built = Join-Path $OutputDir "$packageId.$packageVersion.nupkg"
+    if (-not (Test-Path $built)) {
+        throw "The expected package $built was not produced."
+    }
+    Write-Host "Built $built"
 }
-Write-Host "Built $built"

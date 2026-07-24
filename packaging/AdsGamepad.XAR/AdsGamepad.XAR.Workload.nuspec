@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Beckhoff-USA-Community.AdsGamepad.XAR</id>
+    <version>2.0.0</version>
+    <title>ADS Gamepad Service</title>
+    <authors>Beckhoff Automation LLC</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="file">LICENSE.txt</license>
+    <readme>docs/README.md</readme>
+    <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
+    <description>This workload installs the ADS Gamepad Service on a TwinCAT runtime system. The service reads game controllers and serves their state to the PLC over ADS. This version supports Xbox controllers through the XInput interface; PlayStation DualSense support is planned for a later release.</description>
+    <copyright>(c) Beckhoff Automation LLC</copyright>
+    <tags>Beckhoff TwinCAT Workload CategoryBeckhoff&#160;USA&#160;Community&#160;&#124;&#160;Gamepad VariantXAR</tags>
+    <packageTypes>
+      <packageType name="Workload" />
+    </packageTypes>
+    <dependencies>
+      <dependency id="Beckhoff-USA-Community.XAR.Service.AdsGamepad" version="2.0.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+    <file src="docs\README.md" target="docs\README.md" />
+    <file src="LICENSE.txt" target="LICENSE.txt" />
+  </files>
+</package>
