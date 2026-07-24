@@ -58,8 +58,8 @@ namespace AdsGamepadService
             }
         }
 
-        public AdsControllerServer(ushort port, string portName, ILoggerFactory loggerFactory)
-            : this(port, portName, loggerFactory, CreateDefaultGamepads())
+        public AdsControllerServer(ushort port, string portName, ILoggerFactory loggerFactory, int maxControllers = MaximumControllers)
+            : this(port, portName, loggerFactory, CreateDefaultGamepads(maxControllers))
         {
         }
 
@@ -70,8 +70,14 @@ namespace AdsGamepadService
             _gamepads = gamepads;
         }
 
-        private static IGamepad[] CreateDefaultGamepads()
+        /* Slots above maxControllers get a disabled placeholder instead of an
+           XInput backend, so their index groups still answer with the normal
+           disconnected payload and the wire surface never changes shape. */
+        private static IGamepad[] CreateDefaultGamepads(int maxControllers)
         {
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxControllers, 1);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(maxControllers, MaximumControllers);
+
             if (!OperatingSystem.IsWindows())
             {
                 throw new PlatformNotSupportedException("Only the Windows XInput backend exists today.");
@@ -80,7 +86,9 @@ namespace AdsGamepadService
             var gamepads = new IGamepad[MaximumControllers];
             for (int i = 0; i < MaximumControllers; ++i)
             {
-                gamepads[i] = new XInputGamepad(i + 1);
+                gamepads[i] = i < maxControllers
+                    ? new XInputGamepad(i + 1)
+                    : new DisabledGamepad(i + 1);
             }
             return gamepads;
         }

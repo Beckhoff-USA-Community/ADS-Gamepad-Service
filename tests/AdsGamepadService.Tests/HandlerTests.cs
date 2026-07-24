@@ -16,6 +16,11 @@ namespace AdsGamepadService.Tests
         {
         }
 
+        public TestableAdsControllerServer(int maxControllers)
+            : base(25733, "TestServer", NullLoggerFactory.Instance, maxControllers)
+        {
+        }
+
         public Task<ResultReadBytes> ReadAsync(uint indexGroup, uint indexOffset, int readLength)
             => OnReadAsync(Sender, 1, indexGroup, indexOffset, readLength, CancellationToken.None);
 
@@ -166,6 +171,23 @@ namespace AdsGamepadService.Tests
             await server.WriteAsync(0x70000, 0, new byte[8]);
 
             Assert.All(pads, p => Assert.Equal(1, p.UpdateCalls));
+        }
+
+        /* With MaxControllers reduced, the slots above the count go through
+           the real construction path and must still answer reads with the
+           normal disconnected payload, never with an error. */
+        [Fact]
+        public async Task SlotsAboveTheConfiguredCountAnswerAsDisconnected()
+        {
+            using var server = new TestableAdsControllerServer(2);
+
+            var third = await server.ReadAsync(0x30000, 0, 32);
+            var fourth = await server.ReadAsync(0x40000, 0, 32);
+
+            Assert.Equal(AdsErrorCode.NoError, third.ErrorCode);
+            Assert.Equal(new byte[32], third.Data.ToArray());
+            Assert.Equal(AdsErrorCode.NoError, fourth.ErrorCode);
+            Assert.Equal(new byte[32], fourth.Data.ToArray());
         }
     }
 }
