@@ -17,14 +17,19 @@ builder.Services.AddWindowsService(options =>
     options.ServiceName = "ADS Gamepad Service";
 });
 
+/* Without this the Event Log source would default to the assembly name.
+   Keeping it equal to the display name means operators find the log
+   entries where the documentation says they are. The platform check is
+   repeated inside the callback because the analyzer treats the callback
+   as its own method and needs its own guard there. */
 if (OperatingSystem.IsWindows())
 {
-    /* Without this the Event Log source would default to the assembly name.
-       Keeping it equal to the display name means operators find the log
-       entries where the documentation says they are. */
     builder.Services.Configure<EventLogSettings>(settings =>
     {
-        settings.SourceName = "ADS Gamepad Service";
+        if (OperatingSystem.IsWindows())
+        {
+            settings.SourceName = "ADS Gamepad Service";
+        }
     });
 }
 

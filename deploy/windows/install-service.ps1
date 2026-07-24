@@ -72,12 +72,18 @@ if (-not $existing) {
         -BinaryPathName $quotedExe `
         -DisplayName 'ADS Gamepad Service' `
         -StartupType Automatic `
-        -Description 'Bridges Xbox and PlayStation gamepads to TwinCAT PLCs over ADS.' | Out-Null
+        -Description 'Bridges Xbox gamepads to TwinCAT PLCs over ADS.' | Out-Null
 
     $imagePath = (Get-ItemProperty $registryKey).ImagePath
     if ($imagePath -ne $quotedExe) {
         throw "The service registration stored an unexpected path: $imagePath"
     }
+}
+
+# Delayed start keeps the service from racing the TwinCAT router at boot
+& sc.exe config $serviceName start=delayed-auto | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    throw "Configuring the service start type failed, sc.exe code $LASTEXITCODE."
 }
 
 # Restart automatically on failure: twice after five seconds, then after thirty

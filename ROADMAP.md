@@ -17,17 +17,17 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 * The C++ XInput helper was replaced with direct calls from C# and the native project was deleted. The exact numeric behavior of the old helper was captured in tests first, because details such as deadzone handling and axis mapping are part of how existing machines feel to operate.
 * Hosting, shutdown, logging, and error handling were brought up to current .NET patterns. The service now logs controller connect and disconnect events and restarts cleanly under service recovery if it fails.
 
-## Phase 2: Run as a Windows service
+## Phase 2: Run as a Windows service (complete)
 
-* Today the application must be started by a logged in user and left running. The goal of this phase is a real Windows service that starts with the machine and needs no user session.
-* A configuration file next to the service will hold every value that is currently fixed in code, such as the ADS port, the number of controllers, and log levels.
-* One technical question gets settled first. Windows runs services in an isolated session with no access to the desktop, and it is not documented whether XInput works from there. Reading a PlayStation controller directly over HID from a service is a proven pattern, but the Xbox path may need a small helper process that starts at user logon and forwards controller data to the service. A short experiment on real hardware will decide the design before the rest of the phase is built.
+* The application now runs as a real Windows service that starts with the machine and needs no user session. Install and uninstall scripts live under deploy/windows, and upgrades keep your edited configuration.
+* Every value that was fixed in code moved to appsettings.json next to the service executable, documented in CONFIGURATION.md. Invalid settings stop the service with a clear explanation in the Windows Event Log instead of silently running with wrong values.
+* The open question about reading controllers from the isolated service session was settled by testing on real Beckhoff hardware. XInput sees Xbox controllers from a system service, and PlayStation controllers stream their reports over plain HID in the same context, so the service needs no helper process. The same test showed that the Xbox Adaptive Joystick appears as a plain HID device rather than an XInput controller, which the input backend work in a later phase will pick up.
 
-## Phase 3: Package for the TwinCAT Package Manager
+## Phase 3: Package for the TwinCAT Package Manager (in progress)
 
-* Build the service as a package that the TwinCAT Package Manager can install with a single command, using the same NuGet based format Beckhoff uses.
-* Add a GitHub Actions workflow so every push builds the package automatically.
-* Decide where the package feed lives. GitHub can host NuGet packages, but its feed requires a token even for public packages, which is unfriendly for consumers. The candidates are the GitHub feed with a documented token setup, a static feed served from GitHub Pages, or nuget.org. This choice needs a round of testing against a real TwinCAT Package Manager install.
+* The service now builds as a TwinCAT package under packaging, in the same NuGet based format Beckhoff uses. The package installs the Windows service with a delayed start, keeps an edited appsettings.json across upgrades, and cleanly takes over an installation made with the manual scripts. This was verified end to end on a real controller using a local folder as the package source.
+* A GitHub Actions workflow builds and tests the project on every push to the main branch and on every pull request, and packs the package. Pushing a version tag also publishes the package to the GitHub package feed of this repository, after checking that the tag, the project file, and the package manifest all agree on the version number.
+* The feed decision: GitHub hosts the package feed. GitHub requires a personal access token even for public packages, so consuming the feed from the TwinCAT Package Manager needs a documented token setup. Confirming that flow against a real controller is the remaining step of this phase.
 
 ## Phase 4: Deploy to a test controller
 

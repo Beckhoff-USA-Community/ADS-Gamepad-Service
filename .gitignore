@@ -10,9 +10,16 @@
 *.tsproj.bak
 *.plcproj.bak
 *.~
+*.~u
 *.project.~u
 *.tclrs
 *.tmcRefac
+*.library
+*.tszip
+*.tpzip
+_Boot/
+_CompileInfo/
+_Libraries/
 *.xti.bak
 LineIDs.dbg
 LineIDs.dbg.bak

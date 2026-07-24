@@ -1,0 +1,54 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run tests
+        run: dotnet test AdsGamepadService.sln -c Release
+
+      - name: Publish service
+        run: dotnet publish src/AdsGamepadService -c Release -r win-x64 --self-contained -o packaging/AdsGamepadService.Service/bin
+
+      - name: Check version consistency
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          $tagVersion = '${{ github.ref_name }}'.TrimStart('v')
+          [xml]$nuspec = Get-Content packaging/AdsGamepadService.Service/AdsGamepadService.Service.nuspec
+          $nuspecVersion = $nuspec.package.metadata.version
+          [xml]$csproj = Get-Content src/AdsGamepadService/AdsGamepadService.csproj
+          $csprojVersion = ($csproj.Project.PropertyGroup.Version | Where-Object { $_ }) | Select-Object -First 1
+          if ($tagVersion -ne $nuspecVersion -or $tagVersion -ne $csprojVersion) {
+            throw "Version mismatch: tag $tagVersion, nuspec $nuspecVersion, csproj $csprojVersion. Update all three before tagging."
+          }
+
+      - name: Pack TwinCAT package
+        run: nuget pack packaging/AdsGamepadService.Service/AdsGamepadService.Service.nuspec -OutputDirectory package-output -NoPackageAnalysis
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: twincat-package
+          path: package-output/*.nupkg
+
+      - name: Push to GitHub Packages
+        if: github.ref_type == 'tag'
+        run: dotnet nuget push package-output\*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json

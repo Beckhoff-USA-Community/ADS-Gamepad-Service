@@ -8,7 +8,7 @@
     <WriteProductVersion>true</WriteProductVersion>
     <GenerateTpy>false</GenerateTpy>
     <Name>XboxControllerUtilities</Name>
-    <ProgramVersion>3.1.4023.0</ProgramVersion>
+    <ProgramVersion>3.1.4026.24</ProgramVersion>
     <Application>{a32961f8-6f34-472f-b7c8-bb82820954bf}</Application>
     <TypeSystem>{8a419ba2-45f4-45a8-8347-694b8f18d82b}</TypeSystem>
     <Implicit_Task_Info>{3053bbf5-ec26-4321-99df-606161468b68}</Implicit_Task_Info>
@@ -39,6 +39,8 @@
     </LibraryCategories>
     <SelectedLibraryCategories>
     </SelectedLibraryCategories>
+    <POUsForPropertyAccessIncluded>true</POUsForPropertyAccessIncluded>
+    <GlobalVersionStructureIncluded>true</GlobalVersionStructureIncluded>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="DUTs\NC" />
