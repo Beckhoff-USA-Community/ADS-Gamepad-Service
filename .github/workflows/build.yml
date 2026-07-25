@@ -61,4 +61,4 @@ jobs:
 
       - name: Push to GitHub Packages
         if: github.ref_type == 'tag'
-        run: dotnet nuget push package-output\*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json
+        run: dotnet nuget push package-output\*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json --skip-duplicate
