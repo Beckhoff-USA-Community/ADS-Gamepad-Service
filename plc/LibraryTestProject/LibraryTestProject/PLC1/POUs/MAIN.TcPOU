@@ -5,7 +5,6 @@
 VAR
 	// Gamepad from the AdsGamepad library. An empty NetID means the local machine
 	Gamepad			: FB_Gamepad_Controller('', 1);
-	bEnableMover	: BOOL := TRUE;
 
 	// Raw stick values. Mapping them onto axes or movers is application code
 	fStickX			: LREAL;

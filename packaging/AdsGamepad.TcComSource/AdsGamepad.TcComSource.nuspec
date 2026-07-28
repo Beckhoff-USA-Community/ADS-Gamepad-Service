@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Beckhoff-USA-Community.XAE.TcComSource.AdsGamepad</id>
+    <version>0.0.0.7</version>
+    <title>ADS Gamepad TcCOM Module Source</title>
+    <authors>Beckhoff Automation LLC</authors>
+    <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
+    <copyright>(c) Beckhoff Automation LLC</copyright>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="file">LICENSE.txt</license>
+    <readme>docs/README.md</readme>
+    <summary>Source of the Gamepad TcCOM module for the ADS Gamepad Service</summary>
+    <tags>Beckhoff TwinCAT</tags>
+    <description>Source of the Gamepad TcCOM module, a TwinCAT C++ module that reads a controller from the ADS Gamepad Service and exposes it as process data with no PLC code involved. TwinCAT only loads C++ modules signed with a certificate the target trusts, and a finished binary from someone else cannot be signed after the fact, so the module ships as source and you build and sign it with your own TwinCAT user certificate. The project installs under C:\Program Files\Beckhoff USA Community\ADS Gamepad\TcCOM. Copy it to a writable folder before building. The readme in the project covers requirements and the build steps.</description>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+    <file src="bin\**" target="tools\source" />
+    <file src="docs\README.md" target="docs\README.md" />
+    <file src="LICENSE.txt" target="LICENSE.txt" />
+  </files>
+</package>

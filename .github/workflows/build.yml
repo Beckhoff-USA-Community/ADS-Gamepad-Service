@@ -28,31 +28,80 @@ jobs:
       - name: Publish service
         run: dotnet publish src/AdsGamepadService -c Release -r win-x64 --self-contained -o packaging/AdsGamepadService.Service/bin
 
+      - name: Stage package payloads
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path packaging/AdsGamepad.Documentation/bin | Out-Null
+          Copy-Item README.md packaging/AdsGamepad.Documentation/bin/README.md
+          Copy-Item CONFIGURATION.md packaging/AdsGamepad.Documentation/bin/CONFIGURATION.md
+          Copy-Item MIGRATION.md packaging/AdsGamepad.Documentation/bin/MIGRATION.md
+          Copy-Item tccom/README.md packaging/AdsGamepad.Documentation/bin/TcComModule.md
+          robocopy tccom/Gamepad_TcCOM packaging/AdsGamepad.TcComSource/bin /E /XD _Repository _Boot _products _Deployment .vs /XF *.bak *.user *.tclrs *.suo TcSignLog.txt | Out-Null
+          if ($LASTEXITCODE -ge 8) { throw "Staging the TcCOM source failed, robocopy code $LASTEXITCODE." }
+          Copy-Item tccom/README.md packaging/AdsGamepad.TcComSource/bin/README.md
+          if (Select-String -Path packaging/AdsGamepad.TcComSource/bin/Gamepad_TcCOM.tsproj -Pattern 'TargetNetId="[^"]' -Quiet) {
+            throw 'The staged tsproj still carries a TargetNetId. Set the project target to Local before packing.'
+          }
+          cmd /c exit 0
+
       - name: Check version consistency
         if: github.ref_type == 'tag'
         shell: pwsh
         run: |
           $tagVersion = '${{ github.ref_name }}'.TrimStart('v')
           [xml]$service = Get-Content packaging/AdsGamepadService.Service/AdsGamepadService.Service.nuspec
-          [xml]$workload = Get-Content packaging/AdsGamepad.XAR/AdsGamepad.XAR.Workload.nuspec
+          [xml]$xar = Get-Content packaging/AdsGamepad.XAR/AdsGamepad.XAR.Workload.nuspec
+          [xml]$xae = Get-Content packaging/AdsGamepad.XAE/AdsGamepad.XAE.Workload.nuspec
+          [xml]$library = Get-Content packaging/AdsGamepad.PlcLibrary/AdsGamepad.PlcLibrary.nuspec
+          [xml]$docs = Get-Content packaging/AdsGamepad.Documentation/AdsGamepad.Documentation.nuspec
+          [xml]$source = Get-Content packaging/AdsGamepad.TcComSource/AdsGamepad.TcComSource.nuspec
           [xml]$csproj = Get-Content src/AdsGamepadService/AdsGamepadService.csproj
-          $versions = @(
+
+          # The release train: tag, csproj, service package and both workloads
+          $train = @(
             $service.package.metadata.version,
-            $workload.package.metadata.version,
+            $xar.package.metadata.version,
+            $xae.package.metadata.version,
             (($csproj.Project.PropertyGroup.Version | Where-Object { $_ }) | Select-Object -First 1)
           )
-          $mismatched = $versions | Where-Object { $_ -ne $tagVersion }
+          $mismatched = $train | Where-Object { $_ -ne $tagVersion }
           if ($mismatched) {
-            throw "Version mismatch: tag $tagVersion but found $($versions -join ', '). Update the two nuspec files and the csproj before tagging."
+            throw "Version mismatch: tag $tagVersion but found $($train -join ', '). Update the csproj, the service nuspec and both workload nuspecs before tagging."
+          }
+
+          # A workload must pin every dependency at the version being shipped,
+          # otherwise a released workload pulls an outdated component
+          function Get-PinnedVersion([xml]$nuspec, [string]$id) {
+            ($nuspec.package.metadata.dependencies.dependency | Where-Object { $_.id -eq $id }).version
+          }
+          $pins = @(
+            @{ Nuspec = $xar; Id = 'Beckhoff-USA-Community.XAR.Service.AdsGamepad'; Expected = $service.package.metadata.version },
+            @{ Nuspec = $xae; Id = 'Beckhoff-USA-Community.XAE.PLC.Lib.AdsGamepad'; Expected = $library.package.metadata.version },
+            @{ Nuspec = $xae; Id = 'Beckhoff-USA-Community.XAE.Documentation.AdsGamepad'; Expected = $docs.package.metadata.version },
+            @{ Nuspec = $xae; Id = 'Beckhoff-USA-Community.XAE.TcComSource.AdsGamepad'; Expected = $source.package.metadata.version }
+          )
+          foreach ($pin in $pins) {
+            $actual = Get-PinnedVersion $pin.Nuspec $pin.Id
+            if ($actual -ne $pin.Expected) {
+              throw "A workload pins $($pin.Id) at $actual but that package version is $($pin.Expected)."
+            }
           }
 
       - name: Pack TwinCAT packages
         shell: pwsh
         run: |
-          nuget pack packaging/AdsGamepadService.Service/AdsGamepadService.Service.nuspec -OutputDirectory package-output -NoPackageAnalysis
-          if ($LASTEXITCODE -ne 0) { throw 'Packing the service package failed.' }
-          nuget pack packaging/AdsGamepad.XAR/AdsGamepad.XAR.Workload.nuspec -OutputDirectory package-output -NoPackageAnalysis
-          if ($LASTEXITCODE -ne 0) { throw 'Packing the workload package failed.' }
+          $nuspecs = @(
+            'packaging/AdsGamepadService.Service/AdsGamepadService.Service.nuspec',
+            'packaging/AdsGamepad.PlcLibrary/AdsGamepad.PlcLibrary.nuspec',
+            'packaging/AdsGamepad.Documentation/AdsGamepad.Documentation.nuspec',
+            'packaging/AdsGamepad.TcComSource/AdsGamepad.TcComSource.nuspec',
+            'packaging/AdsGamepad.XAR/AdsGamepad.XAR.Workload.nuspec',
+            'packaging/AdsGamepad.XAE/AdsGamepad.XAE.Workload.nuspec'
+          )
+          foreach ($nuspec in $nuspecs) {
+            nuget pack $nuspec -OutputDirectory package-output -NoPackageAnalysis
+            if ($LASTEXITCODE -ne 0) { throw "Packing $nuspec failed." }
+          }
 
       - uses: actions/upload-artifact@v7
         with:

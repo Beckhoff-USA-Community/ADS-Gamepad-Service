@@ -293,3 +293,8 @@ __pycache__/
 
 # TwinCAT C++ build output
 _Deployment/
+_Repository/
+
+# Compiled libraries are ignored above, but the library package ships one
+# committed export. Whatever is saved here is what the package installs.
+!packaging/AdsGamepad.PlcLibrary/library/AdsGamepad.library

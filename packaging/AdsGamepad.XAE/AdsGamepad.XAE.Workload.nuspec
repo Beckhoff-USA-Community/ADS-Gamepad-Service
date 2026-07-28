@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>Beckhoff-USA-Community.AdsGamepad.XAR</id>
+    <id>Beckhoff-USA-Community.AdsGamepad.XAE</id>
     <version>2.1.0</version>
     <title>ADS Gamepad</title>
     <authors>Beckhoff Automation LLC</authors>
@@ -9,14 +9,16 @@
     <license type="file">LICENSE.txt</license>
     <readme>docs/README.md</readme>
     <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
-    <description>This workload installs the ADS Gamepad Service on a TwinCAT runtime system. The service reads game controllers and serves their state to the PLC over ADS. This version supports Xbox controllers through the XInput interface; PlayStation DualSense support is planned for a later release.</description>
+    <description>This workload sets up an engineering system for the ADS Gamepad Service. It installs the AdsGamepad PLC library, the documentation, and the source of the TcCOM module. The library also lands in the XAE library repository, ready to reference. The matching runtime workload installs the service itself.</description>
     <copyright>(c) Beckhoff Automation LLC</copyright>
-    <tags>Beckhoff TwinCAT Workload CategoryBeckhoff&#160;USA&#160;Community&#160;&#124;&#160;Gamepad VariantXAR</tags>
+    <tags>Beckhoff TwinCAT Workload CategoryBeckhoff&#160;USA&#160;Community&#160;&#124;&#160;Gamepad VariantXAE</tags>
     <packageTypes>
       <packageType name="Workload" />
     </packageTypes>
     <dependencies>
-      <dependency id="Beckhoff-USA-Community.XAR.Service.AdsGamepad" version="2.1.0" />
+      <dependency id="Beckhoff-USA-Community.XAE.PLC.Lib.AdsGamepad" version="2.0.0" />
+      <dependency id="Beckhoff-USA-Community.XAE.Documentation.AdsGamepad" version="1.0.0" />
+      <dependency id="Beckhoff-USA-Community.XAE.TcComSource.AdsGamepad" version="0.0.0.7" />
     </dependencies>
   </metadata>
   <files>

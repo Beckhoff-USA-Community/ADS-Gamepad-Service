@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Beckhoff-USA-Community.XAE.PLC.Lib.AdsGamepad</id>
+    <version>2.0.0</version>
+    <title>AdsGamepad PLC Library</title>
+    <authors>Beckhoff Automation LLC</authors>
+    <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
+    <copyright>(c) Beckhoff Automation LLC</copyright>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="file">LICENSE.txt</license>
+    <readme>docs/README.md</readme>
+    <summary>TwinCAT PLC library for the ADS Gamepad Service</summary>
+    <tags>Beckhoff TwinCAT XAE PLC Library AllowMultipleVersions</tags>
+    <releaseNotes>Version 2.0.0 renames the library from XboxControllerUtilities to AdsGamepad and removes the NC and XPlanar helper blocks. MIGRATION.md in the project repository describes the move.</releaseNotes>
+    <description>AdsGamepad is the TwinCAT 3 PLC library for the ADS Gamepad Service. FB_Gamepad_Controller reads the controller state over ADS every PLC cycle and exposes buttons, sticks, triggers, battery state and rumble through properties. The install puts the library into the XAE library repository, ready to reference, and a copy of the library file under C:\Program Files\Beckhoff USA Community\ADS Gamepad\Library.</description>
+    <dependencies>
+      <dependency id="TwinCAT.Standard.XAE" version="0.0.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+    <file src="library\AdsGamepad.library" target="tools\AdsGamepad.library" />
+    <file src="docs\README.md" target="docs\README.md" />
+    <file src="LICENSE.txt" target="LICENSE.txt" />
+  </files>
+</package>

@@ -15,7 +15,7 @@ The module is distributed as source only. You build and sign it yourself. TwinCA
 
 ## Building
 
-* Open tccom/Gamepad_TcCOM/Gamepad_TcCOM.slnx.
+* Open Gamepad_TcCOM.slnx from the project folder, tccom/Gamepad_TcCOM in this repository. An installed copy from the source package lives under C:\Program Files\Beckhoff USA Community\ADS Gamepad\TcCOM and must be copied to a writable folder first.
 * Run the TwinCAT TMC Code Generator once on the ADS_Gamepad project.
 * Build for the target platform.
 
@@ -23,7 +23,7 @@ The module is distributed as source only. You build and sign it yourself. TwinCA
 
 * Add a task to your TwinCAT project.
 * Add an instance of the Gamepad module class.
-* Assign the task under Context.
+* Assign the task under Context. Afterwards check the Interface Pointer tab: CyclicCaller must hold the object id of that task. XAE normally fills this in when you set the context, and the module refuses to reach OP while it is 0.
 * Check the parameters. The defaults connect to controller 1 on the local gamepad service, so on a single machine setup you change nothing.
 * Link the output variables, and link the rumble inputs if you want force feedback.
 
@@ -55,7 +55,7 @@ The module decodes the raw service data into plain variables that link directly 
 * fLeftTrigger and fRightTrigger are the trigger travels with deadzone and curve applied, range 0 to 100.
 * nButtonsRaw and nStatesRaw carry the unmodified wire words for power users. nStatesRaw holds the battery info in bits 1 to 9.
 * eCommState, nErrorCount and nDataAgeCycles are communication diagnostics.
-* stServiceInfo shows contract and service versions, served by gamepad services from release 2.0.0 on.
+* stServiceInfo shows contract and service versions, served by gamepad services from release 2.1.0 on.
 
 On any communication error the module zeroes all decoded outputs, bConnected included, and reports the reason in eCommState.
 

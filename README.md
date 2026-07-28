@@ -6,12 +6,13 @@ ADS Gamepad Service connects Xbox and PlayStation gamepads attached to PCs, IPCs
 
 The service ships as TwinCAT packages on the GitHub package feed of this repository. GitHub requires a login for its package feeds, even for public packages, so you need a GitHub account and a personal access token. Create a token of the classic type with the read:packages scope under Developer settings in your GitHub account settings.
 
-Add the feed from the command line on the target system, then install the workload. Enter the token when prompted for a password.
+Add the feed from the command line, then install the workload that matches the system. The runtime workload puts the service on the system that has the controllers attached. The engineering workload puts the PLC library, the documentation and the TcCOM module source on the system that runs XAE. Enter the token when prompted for a password. Run only the install line that matches the system, or both on a machine that does both jobs.
 
 ```powershell
 tcpkg source add -n AdsGamepad -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
 tcpkg config unset -n VerifySignatures
 tcpkg install Beckhoff-USA-Community.AdsGamepad.XAR -y
+tcpkg install Beckhoff-USA-Community.AdsGamepad.XAE -y
 ```
 
 Two settings in these commands are required, not optional:

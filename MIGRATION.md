@@ -74,4 +74,4 @@ Services older than 2.1.0 do not serve the info block, so against them the hands
 
 ## Choosing between the PLC library and the TcCOM module
 
-The repository also offers a TcCOM module, documented in tccom/README.md. The PLC library is the simple path: it works everywhere TwinCAT PLC runs, and one function block serves one controller. The TcCOM module suits projects that want gamepad data as linkable process data without any PLC code and are comfortable building C++.
+The repository also offers a TcCOM module, described in its own readme, tccom/README.md in the repository and TcComModule.md in the installed documentation set. The PLC library is the simple path: it works everywhere TwinCAT PLC runs, and one function block serves one controller. The TcCOM module suits projects that want gamepad data as linkable process data without any PLC code and are comfortable building C++.

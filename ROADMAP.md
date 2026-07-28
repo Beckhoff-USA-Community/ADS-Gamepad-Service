@@ -8,7 +8,8 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 * The application registers itself as an ADS server on port 25733. The PLC polls that server every cycle to read controller data and to write rumble commands. This wire format is treated as frozen. Any change to it will be versioned so that existing PLC programs keep working or fail loudly, never silently.
 * Xbox controllers are read directly from C# through the Microsoft XInput API. The old C++ helper library is gone, so the project needs only the .NET SDK to build.
 * A test suite under tests locks the exact numeric behavior of the controller math, including the deadzone handling and axis mapping the old helper shipped with, so a future change cannot silently alter what the PLC receives.
-* The PLC library sources are under plc. The library keeps its original name, XboxControllerUtilities, so that projects built against earlier releases keep resolving. A carefully managed rename is planned in a later phase.
+* The PLC library sources are under plc. The library is called AdsGamepad since version 2.0.0 and covers plain controller I/O: buttons, sticks, triggers, battery state and rumble. The helper blocks of the old library are gone, and MIGRATION.md at the repository root explains the move from XboxControllerUtilities, whose final release stays available under the old name.
+* A TwinCAT C++ module under tccom exposes a controller as plain process data. You add an instance, assign a task and link the variables, with no PLC code involved. It is distributed as source because TwinCAT only loads C++ modules that are signed with a certificate the target trusts, so users build and sign it themselves. The README under tccom covers the build.
 * The content under Documentation is the old documentation site. It still refers to the old project names and will be rewritten as the phases below land. Until then, treat it as historical reference.
 
 ## Phase 1: Move to current .NET (complete)
@@ -31,13 +32,20 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 
 ## Phase 4: Deploy to a test controller
 
-* Install the package on a real Beckhoff controller over SSH and verify service startup, ADS traffic, and recovery behavior after reboots and cable pulls.
+* Install the workloads on a real Beckhoff controller over SSH and verify service startup, ADS traffic, and recovery behavior after reboots and cable pulls.
 
-## Phase 5: PLC library cleanup
+## Phase 5: PLC library cleanup (complete)
 
-* Use the TwinCAT Automation Interface to rebuild the PLC library project cleanly: regenerate the project information, retire leftovers from old TwinCAT versions, and fix small inconsistencies in file naming.
-* Decide and execute the library naming strategy. A renamed library is a new identity as far as TwinCAT is concerned, so this ships together with a migration guide and a final frozen release under the old name.
-* Add a version handshake between the service and the library so a mismatched pair reports a clear error instead of misreading data.
+* The library was cut down to plain controller I/O and rebuilt under the new name AdsGamepad. The NC jog and XPlanar helper blocks are gone. How a stick value drives an axis is application code now, and the migration guide shows an example of the change.
+* A renamed library is a new identity as far as TwinCAT is concerned, so the last XboxControllerUtilities release stays available under the old name and MIGRATION.md describes the move.
+* The version handshake landed on both sides. The library reads an info block from the service once at startup and reports a clear state for a mismatched pair instead of misreading data. The service side of the handshake ships with release 2.1.0.
+* The phase also produced the TwinCAT C++ module under tccom, which reads the same wire format from a task cycle without any PLC involvement.
+
+## Phase 5.5: Installation through the TwinCAT Package Manager
+
+* The project output is regrouped into two workloads. The engineering workload installs the documentation, the TcCOM module source and the PLC library, and puts the library into the XAE library repository so it is ready to reference after the install. The runtime workload installs the Windows service. Both show up as one card with an engineering and a runtime row in the package manager.
+* All components install under one product directory below C:\Program Files\Beckhoff USA Community, the way normal applications do. Upgrades keep an edited configuration, even when they move an installation from the old default location.
+* Service release 2.1.0 rides this restructuring. One release carries the version handshake and the new package layout.
 
 ## Phase 6: Controller testing
 

@@ -466,6 +466,6 @@
   </Modules>
   <Library>
     <Name>ADS_Gamepad</Name>
-    <Version>0.0.0.6</Version>
+    <Version>0.0.0.7</Version>
   </Library>
 </TcModuleClass>

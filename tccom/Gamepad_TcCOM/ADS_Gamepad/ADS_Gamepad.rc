@@ -33,9 +33,9 @@ BEGIN
             VALUE "FileDescription", RC_FILE_DESCRIPTION
             VALUE "FileVersion", ADS_Gamepad_FileVersionRcStr
             VALUE "InternalName", ADS_Gamepad_InternalNameStr
-            VALUE "LegalCopyright", "TODO: Add legal copyright"
+            VALUE "LegalCopyright", "0BSD license, Beckhoff USA Community"
             VALUE "OriginalFilename", ADS_Gamepad_InternalNameStr ".sys"
-            VALUE "ProductName", "TODO: Add product name"
+            VALUE "ProductName", "ADS Gamepad TcCOM Module"
             VALUE "ProductVersion", ADS_Gamepad_ProductVersionRcStr
         END
     END

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Beckhoff-USA-Community.XAE.Documentation.AdsGamepad</id>
+    <version>1.0.0</version>
+    <title>ADS Gamepad Documentation</title>
+    <authors>Beckhoff Automation LLC</authors>
+    <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
+    <copyright>(c) Beckhoff Automation LLC</copyright>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="file">LICENSE.txt</license>
+    <readme>docs/README.md</readme>
+    <summary>Documentation for the ADS Gamepad Service</summary>
+    <tags>Beckhoff TwinCAT</tags>
+    <description>Documentation for the ADS Gamepad Service: the project overview, the configuration reference of the Windows service, the migration guide from the XboxControllerUtilities library, and the TcCOM module description. The files install under C:\Program Files\Beckhoff USA Community\ADS Gamepad\Documentation.</description>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+    <file src="bin\**" target="tools\docs" />
+    <file src="docs\README.md" target="docs\README.md" />
+    <file src="LICENSE.txt" target="LICENSE.txt" />
+  </files>
+</package>
