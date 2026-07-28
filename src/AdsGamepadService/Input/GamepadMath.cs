@@ -13,7 +13,7 @@ namespace AdsGamepadService.Input
 
         internal const int TriggerThreshold = 30;
 
-        // Bits 10 and 11 are unused in the PLC contract and are never set.
+        // Mask for the XInput path, which never publishes bits 10 and 11
         private const ushort WireButtonMask = 0xF3FF;
 
         /* A stick axis inside the deadzone reads as zero. Outside it the raw
@@ -55,9 +55,26 @@ namespace AdsGamepadService.Input
             return unchecked((ushort)truncated);
         }
 
+        /* Bits 10 and 11 are stripped from the XInput path: bit 10 is the
+           Guide button there and was never part of the contract. From
+           contract 1.2 on the PlayStation backend publishes Create and
+           Options on those bits, built directly without this mask. */
         internal static ushort WireButtons(ushort wButtons)
         {
             return (ushort)(wButtons & WireButtonMask);
+        }
+
+        /* Rumble percent to the byte motor range of the PlayStation output
+           report. Same philosophy as the speed conversion above: the service
+           does not clamp, the conversion goes through a 32 bit integer, and
+           out of range input wraps through the final cast. */
+        internal static byte RumbleMotorByte(float percent)
+        {
+            float value = (percent / 100.0f) * 255.0f;
+            int truncated = (float.IsNaN(value) || value >= 2147483648.0f || value < -2147483648.0f)
+                ? int.MinValue
+                : (int)value;
+            return unchecked((byte)truncated);
         }
     }
 }

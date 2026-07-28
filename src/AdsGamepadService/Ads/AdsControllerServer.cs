@@ -61,8 +61,9 @@ namespace AdsGamepadService
            sum, so contract v1 clients never collide with it. */
         internal const uint ServiceInfoIndexGroup = 0xF000;
         internal const ushort ContractVersionMajor = 1;
-        internal const ushort ContractVersionMinor = 1;
+        internal const ushort ContractVersionMinor = 2;
         internal const uint CapabilityXInputBackend = 1u << 0;
+        internal const uint CapabilityDualSenseBackend = 1u << 1;
 
         private const uint ReadGroupStride = 0x10000;
         private const uint RumbleCommandOffset = 0x10;
@@ -89,8 +90,8 @@ namespace AdsGamepadService
             }
         }
 
-        public AdsControllerServer(ushort port, string portName, ILoggerFactory loggerFactory, int maxControllers = MaximumControllers)
-            : this(port, portName, loggerFactory, CreateDefaultGamepads(maxControllers))
+        public AdsControllerServer(ushort port, string portName, ILoggerFactory loggerFactory, int maxControllers = MaximumControllers, string[]? slotSources = null)
+            : this(port, portName, loggerFactory, CreateDefaultGamepads(maxControllers, slotSources, loggerFactory))
         {
         }
 
@@ -101,25 +102,48 @@ namespace AdsGamepadService
             _gamepads = gamepads;
         }
 
-        /* Slots above maxControllers get a disabled placeholder instead of an
-           XInput backend, so their index groups still answer with the normal
-           disconnected payload and the wire surface never changes shape. */
-        private static IGamepad[] CreateDefaultGamepads(int maxControllers)
+        /* The PlayStation backend owns a reader thread and a device handle;
+           they go down with the server. */
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (IGamepad gamepad in _gamepads)
+                {
+                    (gamepad as IDisposable)?.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
+
+        /* Slots above maxControllers get a disabled placeholder instead of a
+           hardware backend, so their index groups still answer with the
+           normal disconnected payload and the wire surface never changes
+           shape. An active slot reads the backend its configuration names;
+           missing entries mean XInput polling the pad with the same number
+           as the slot, the behavior of every release before 2.2.0. */
+        private static IGamepad[] CreateDefaultGamepads(int maxControllers, string[]? slotSources, ILoggerFactory loggerFactory)
         {
             ArgumentOutOfRangeException.ThrowIfLessThan(maxControllers, 1);
             ArgumentOutOfRangeException.ThrowIfGreaterThan(maxControllers, MaximumControllers);
 
             if (!OperatingSystem.IsWindows())
             {
-                throw new PlatformNotSupportedException("Only the Windows XInput backend exists today.");
+                throw new PlatformNotSupportedException("The input backends exist for Windows only today.");
             }
 
             var gamepads = new IGamepad[MaximumControllers];
             for (int i = 0; i < MaximumControllers; ++i)
             {
-                gamepads[i] = i < maxControllers
-                    ? new XInputGamepad(i + 1)
-                    : new DisabledGamepad(i + 1);
+                if (i >= maxControllers)
+                {
+                    gamepads[i] = new DisabledGamepad(i + 1);
+                    continue;
+                }
+                string source = slotSources is not null && i < slotSources.Length ? slotSources[i] : ServiceOptions.SourceXInput;
+                gamepads[i] = string.Equals(source, ServiceOptions.SourceDualSense, StringComparison.OrdinalIgnoreCase)
+                    ? new DualSenseGamepad(i + 1, loggerFactory.CreateLogger<DualSenseGamepad>())
+                    : new XInputGamepad(i + 1);
             }
             return gamepads;
         }
@@ -267,8 +291,9 @@ namespace AdsGamepadService
 
         /* Pure assembly of the service info block. The service version is
            read from the assembly at runtime, so the project Version property
-           stays the single source of that number. The only input backend
-           today is XInput, so capability bit 0 is always set. */
+           stays the single source of that number. The capability bits state
+           which input backends this build contains, not which slots use
+           them, so both are always set. */
         internal static AdsServiceInfo BuildServiceInfo()
         {
             Version version = typeof(AdsControllerServer).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
@@ -280,7 +305,7 @@ namespace AdsGamepadService
                 ServiceMinor = (ushort)version.Minor,
                 ServicePatch = (ushort)Math.Max(version.Build, 0),
                 Reserved = 0,
-                Capabilities = CapabilityXInputBackend,
+                Capabilities = CapabilityXInputBackend | CapabilityDualSenseBackend,
             };
         }
 

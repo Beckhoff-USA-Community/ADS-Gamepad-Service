@@ -65,13 +65,13 @@ namespace AdsGamepadService.Tests
             byte[] data = result.Data.ToArray();
             Assert.Equal(32, data.Length);
             Assert.Equal(1, BitConverter.ToUInt16(data, 0));
-            Assert.Equal(1, BitConverter.ToUInt16(data, 2));
+            Assert.Equal(2, BitConverter.ToUInt16(data, 2));
             Assert.Equal((ushort)version.Major, BitConverter.ToUInt16(data, 4));
             Assert.Equal((ushort)version.Minor, BitConverter.ToUInt16(data, 6));
             Assert.Equal((ushort)version.Build, BitConverter.ToUInt16(data, 8));
             Assert.Equal(0, BitConverter.ToUInt16(data, 10));
-            // Bit 0, XInput backend present
-            Assert.Equal(1u, BitConverter.ToUInt32(data, 12));
+            // Bit 0 XInput backend present, bit 1 DualSense backend present
+            Assert.Equal(3u, BitConverter.ToUInt32(data, 12));
             Assert.Equal(new byte[16], data[16..]);
         }
 

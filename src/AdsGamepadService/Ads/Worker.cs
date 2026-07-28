@@ -48,7 +48,7 @@ namespace AdsGamepadService
 
             try
             {
-                using var server = new AdsControllerServer((ushort)options.AmsPort, options.ServerName, _loggerFactory, options.MaxControllers);
+                using var server = new AdsControllerServer((ushort)options.AmsPort, options.ServerName, _loggerFactory, options.MaxControllers, options.SlotSources);
                 _logger.LogInformation(
                     "Starting ADS server {Name} on ADS port {Port} with {Controllers} controller slots.",
                     options.ServerName, options.AmsPort, options.MaxControllers);

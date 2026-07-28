@@ -202,7 +202,7 @@
 			</Tasks>
 			<Modules>
 				<Module Id="#x01010010" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
-					<Name>Object1 (Gamepad)</Name>
+					<Name>Gamepad 1</Name>
 					<ImageId>1000</ImageId>
 					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
 						<Name>Gamepad</Name>

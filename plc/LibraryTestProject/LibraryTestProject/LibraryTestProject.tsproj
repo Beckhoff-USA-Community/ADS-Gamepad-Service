@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4026.24">
-	<Project ProjectGUID="{02201521-5EDE-46D8-8A80-2726AFB473A2}" TargetNetId="192.168.40.70.1.1" Target64Bit="true" ShowHideConfigurations="#x3c7">
+	<Project ProjectGUID="{02201521-5EDE-46D8-8A80-2726AFB473A2}" Target64Bit="true" ShowHideConfigurations="#x3c7">
 		<System>
 			<Settings MaxCpus="24" CoreBoostActive="true" PCoreAffinity="255" ECoreAffinity="16776960"/>
 			<Tasks>

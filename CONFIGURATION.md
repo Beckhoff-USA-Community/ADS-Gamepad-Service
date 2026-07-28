@@ -10,7 +10,14 @@ The Service section holds the values specific to this application.
 | --- | --- | --- |
 | AmsPort | 25733 | The ADS port the server registers with the local ADS router. The PLC library connects to this port, so only change it if you also change the port on the PLC side. |
 | ServerName | XboxAdsServer | The name of the registration. It appears in ADS router diagnostics and has no effect on the PLC connection. |
-| MaxControllers | 4 | How many controller slots are polled, from 1 to 4. Slots above this count still answer PLC reads but always report as disconnected. Four is the most the underlying Microsoft XInput API supports. |
+| MaxControllers | 4 | How many controller slots are polled, from 1 to 4. Slots above this count still answer PLC reads but always report as disconnected. |
+| SlotSources | all XInput | The input backend for each of the four slots, in slot order. XInput reads the slot number as XInput controller index, the behavior of all releases before 2.2.0. DualSense reads one wired PlayStation 5 controller; at most one slot can use it. Missing entries mean XInput. |
+
+## PlayStation controllers
+
+From version 2.2.0 a slot can read a wired PlayStation 5 DualSense controller instead of an Xbox controller. Set the slot's entry in SlotSources to DualSense. Prefer a high slot for it: every XInput slot is tied to the Xbox controller with the same number, so a DualSense on slot one would leave the first Xbox controller unread. The pad connects over USB; Bluetooth is not supported yet. Sticks, triggers and buttons arrive at the PLC in the same value ranges as from an Xbox pad, with Cross, Circle, Square and Triangle on the A, B, X and Y bits, Create on Back and Options on Start. Create and Options additionally appear on the previously unused button bits 10 and 11, so a program that wants to tell the two pad families apart can.
+
+One thing to watch: a DualSense that is still paired with a phone, laptop or PlayStation sends its buttons to that device even while the cable is plugged in here, and from this side that looks like a connected pad that never reacts. The service logs a warning to the Event Log when it detects that state. Unpair the controller from every other device before using it.
 
 ## Logging
 
@@ -29,7 +36,8 @@ The predecessor of this project installed as TwinCAT Xbox Controller Service und
   "Service": {
     "AmsPort": 25733,
     "ServerName": "XboxAdsServer",
-    "MaxControllers": 2
+    "MaxControllers": 2,
+    "SlotSources": [ "XInput", "DualSense" ]
   },
   "Logging": {
     "LogLevel": {
@@ -39,4 +47,4 @@ The predecessor of this project installed as TwinCAT Xbox Controller Service und
 }
 ```
 
-This example polls only controllers one and two and keeps the standard port and name.
+This example polls two slots, an Xbox controller on slot one and a wired DualSense on slot two, and keeps the standard port and name.

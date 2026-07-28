@@ -7,6 +7,7 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 * The Windows application lives in src/AdsGamepadService and targets .NET 10, the current long term support release, with the Beckhoff ADS packages on the 7.0 line.
 * The application registers itself as an ADS server on port 25733. The PLC polls that server every cycle to read controller data and to write rumble commands. This wire format is treated as frozen. Any change to it will be versioned so that existing PLC programs keep working or fail loudly, never silently.
 * Xbox controllers are read directly from C# through the Microsoft XInput API. The old C++ helper library is gone, so the project needs only the .NET SDK to build.
+* A second input backend reads a wired PlayStation 5 DualSense controller over raw HID, selected per slot in the configuration file. Hardware verification of that backend is part of Phase 6.
 * A test suite under tests locks the exact numeric behavior of the controller math, including the deadzone handling and axis mapping the old helper shipped with, so a future change cannot silently alter what the PLC receives.
 * The PLC library sources are under plc. The library is called AdsGamepad since version 2.0.0 and covers plain controller I/O: buttons, sticks, triggers, battery state and rumble. The helper blocks of the old library are gone, and MIGRATION.md at the repository root explains the move from XboxControllerUtilities, whose final release stays available under the old name.
 * A TwinCAT C++ module under tccom exposes a controller as plain process data. You add an instance, assign a task and link the variables, with no PLC code involved. It is distributed as source because TwinCAT only loads C++ modules that are signed with a certificate the target trusts, so users build and sign it themselves. The README under tccom covers the build.
@@ -47,10 +48,14 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 * All components install under one product directory below C:\Program Files\Beckhoff USA Community, the way normal applications do. Upgrades keep an edited configuration, even when they move an installation from the old default location.
 * Service release 2.1.0 rides this restructuring. One release carries the version handshake and the new package layout.
 
-## Phase 6: Controller testing
+## Phase 6: PlayStation support and controller testing
 
-* Structured testing with physical Xbox and PlayStation 5 controllers on real hardware, covering connect, disconnect, battery reporting, rumble, and input accuracy.
-* PlayStation support lands here. The DualSense controller speaks standard HID, and the service gains a second input backend for it.
+* PlayStation support: the service reads a wired PlayStation 5 DualSense controller over raw HID as a second input backend. The slot that uses it is chosen in the configuration file, and a configuration without that setting behaves exactly as before. The report layout was verified byte by byte against a real controller before the decoder was written.
+* Structured testing with physical Xbox and PlayStation controllers on real hardware, covering connect, disconnect, battery reporting, rumble, and input accuracy.
+
+## Later: extended controller data
+
+* Bluetooth operation, battery detail, and the data a DualSense offers beyond a classic gamepad, such as the touchpad and the motion sensors, are planned as a separate versioned extension of the wire format. The current 32 byte block stays untouched so existing programs never notice the addition.
 
 ## Phase 7: Linux support (stretch goal)
 
