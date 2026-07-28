@@ -16,7 +16,10 @@ namespace AdsGamepadService
               A disconnected controller answers success with 32 zero bytes and
               the PLC detects it through States bit 0.
        Write: rumble command, exactly 8 bytes (two 32 bit floats), matched on
-              the sum of IndexGroup and IndexOffset (0x10010 to 0x40010). */
+              the sum of IndexGroup and IndexOffset (0x10010 to 0x40010).
+       Info:  IndexGroup 0xF000 answers with the 32 byte service info block
+              (contract version, service version, capabilities). Added in
+              contract v1.1; the controller blocks above are untouched. */
     public class AdsControllerServer : AdsServer
     {
         /* Wire image of one controller. The layout is pinned so the 32 byte
@@ -35,8 +38,31 @@ namespace AdsGamepadService
             public short States;
         }
 
+        /* Wire image of the service info block, contract v1.1. Serialized
+           into a 32 byte reply; the bytes past this struct stay zero. */
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        internal struct AdsServiceInfo
+        {
+            public ushort ContractMajor;
+            public ushort ContractMinor;
+            public ushort ServiceMajor;
+            public ushort ServiceMinor;
+            public ushort ServicePatch;
+            public ushort Reserved;
+            public uint Capabilities;
+        }
+
         internal const int MaximumControllers = 4;
         internal const int InputStructSize = 32;
+        internal const int ServiceInfoBlockSize = 32;
+        internal const int ServiceInfoStructSize = 16;
+
+        /* 0xF000 sits outside every controller read group and every rumble
+           sum, so contract v1 clients never collide with it. */
+        internal const uint ServiceInfoIndexGroup = 0xF000;
+        internal const ushort ContractVersionMajor = 1;
+        internal const ushort ContractVersionMinor = 1;
+        internal const uint CapabilityXInputBackend = 1u << 0;
 
         private const uint ReadGroupStride = 0x10000;
         private const uint RumbleCommandOffset = 0x10;
@@ -55,6 +81,11 @@ namespace AdsGamepadService
             {
                 throw new InvalidOperationException(
                     $"AdsGamepadInputs must marshal to exactly {InputStructSize} bytes, got {Marshal.SizeOf<AdsGamepadInputs>()}.");
+            }
+            if (Marshal.SizeOf<AdsServiceInfo>() != ServiceInfoStructSize)
+            {
+                throw new InvalidOperationException(
+                    $"AdsServiceInfo must marshal to exactly {ServiceInfoStructSize} bytes, got {Marshal.SizeOf<AdsServiceInfo>()}.");
             }
         }
 
@@ -100,6 +131,13 @@ namespace AdsGamepadService
 
         protected override Task<ResultReadBytes> OnReadAsync(AmsAddress sender, uint invokeId, uint indexGroup, uint indexOffset, int readLength, CancellationToken cancel)
         {
+            /* Matched on IndexGroup alone like the controller reads below;
+               IndexOffset and the requested length are ignored the same way. */
+            if (indexGroup == ServiceInfoIndexGroup)
+            {
+                return Task.FromResult(ResultReadBytes.CreateSuccess(SerializeServiceInfo(BuildServiceInfo()).AsMemory()));
+            }
+
             if (!TryGetControllerIndexForRead(indexGroup, out int index))
             {
                 return Task.FromResult(ResultReadBytes.CreateError(AdsErrorCode.DeviceInvalidGroup));
@@ -224,6 +262,32 @@ namespace AdsGamepadService
         {
             byte[] payload = new byte[InputStructSize];
             MemoryMarshal.Write(payload, in inputs);
+            return payload;
+        }
+
+        /* Pure assembly of the service info block. The service version is
+           read from the assembly at runtime, so the project Version property
+           stays the single source of that number. The only input backend
+           today is XInput, so capability bit 0 is always set. */
+        internal static AdsServiceInfo BuildServiceInfo()
+        {
+            Version version = typeof(AdsControllerServer).Assembly.GetName().Version ?? new Version(0, 0, 0, 0);
+            return new AdsServiceInfo
+            {
+                ContractMajor = ContractVersionMajor,
+                ContractMinor = ContractVersionMinor,
+                ServiceMajor = (ushort)version.Major,
+                ServiceMinor = (ushort)version.Minor,
+                ServicePatch = (ushort)Math.Max(version.Build, 0),
+                Reserved = 0,
+                Capabilities = CapabilityXInputBackend,
+            };
+        }
+
+        internal static byte[] SerializeServiceInfo(in AdsServiceInfo info)
+        {
+            byte[] payload = new byte[ServiceInfoBlockSize];
+            MemoryMarshal.Write(payload, in info);
             return payload;
         }
 

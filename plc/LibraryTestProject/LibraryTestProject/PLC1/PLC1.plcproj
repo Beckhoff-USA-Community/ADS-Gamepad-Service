@@ -8,7 +8,7 @@
     <WriteProductVersion>true</WriteProductVersion>
     <GenerateTpy>false</GenerateTpy>
     <Name>PLC1</Name>
-    <ProgramVersion>3.1.4023.0</ProgramVersion>
+    <ProgramVersion>3.1.4026.24</ProgramVersion>
     <Application>{e3a58716-ce8d-4dee-83c8-70f90def8454}</Application>
     <TypeSystem>{69951bec-03dc-4aa9-93e4-05efbb87a84d}</TypeSystem>
     <Implicit_Task_Info>{afc9c767-4dd2-4b6e-ba72-7e08009f6b87}</Implicit_Task_Info>
@@ -31,9 +31,9 @@
     <Folder Include="POUs" />
   </ItemGroup>
   <ItemGroup>
-    <PlaceholderReference Include="Tc2_MC2">
-      <DefaultResolution>Tc2_MC2, * (Beckhoff Automation GmbH)</DefaultResolution>
-      <Namespace>Tc2_MC2</Namespace>
+    <PlaceholderReference Include="AdsGamepad">
+      <DefaultResolution>AdsGamepad, * (Beckhoff Community)</DefaultResolution>
+      <Namespace>AdsGamepad</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="Tc2_Standard">
       <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
@@ -46,14 +46,6 @@
     <PlaceholderReference Include="Tc3_Module">
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc3_Module</Namespace>
-    </PlaceholderReference>
-    <PlaceholderReference Include="Tc3_XPlanarStandard">
-      <DefaultResolution>Tc3_XPlanarStandard, * (Beckhoff Automation GmbH)</DefaultResolution>
-      <Namespace>Tc3_XPlanarStandard</Namespace>
-    </PlaceholderReference>
-    <PlaceholderReference Include="XboxControllerUtilities">
-      <DefaultResolution>XboxControllerUtilities, * (Beckhoff Community)</DefaultResolution>
-      <Namespace>XboxControllerUtilities</Namespace>
     </PlaceholderReference>
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="E_Gamepad_Handshake_State" Id="{a599cfcb-e618-4094-8186-3c7659e4937e}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_Gamepad_Handshake_State :
+(
+	// No handshake attempt has run yet
+	NotStarted := 0,
+	// The read of the service info block is in flight
+	Busy := 1,
+	// The service answered and the contract versions are compatible
+	Compatible := 2,
+	// The service predates the info block. Data exchange still works
+	Unsupported := 3,
+	// The service speaks a newer contract major version. Check for a library update
+	Mismatch := 4
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

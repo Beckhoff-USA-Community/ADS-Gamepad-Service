@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="ST_Gamepad_Service_Info" Id="{c08d019e-72d6-4ab1-bac3-da1625f81016}">
+    <Declaration><![CDATA[// Mirror of the 32 byte service info block served at IndexGroup 16#F000.
+// Services older than 2.1.0 do not serve this block. Layout is frozen.
+TYPE ST_Gamepad_Service_Info :
+STRUCT
+	// Wire contract version the service speaks. This library expects major 1
+	nContractMajor	: UINT;
+	nContractMinor	: UINT;
+	// Version of the running service program
+	nServiceMajor	: UINT;
+	nServiceMinor	: UINT;
+	nServicePatch	: UINT;
+	nReserved		: UINT;
+	// Capability bits. Bit 0 means the XInput backend is present
+	dwCapabilities	: UDINT;
+	// Reserved for future contract versions, always zero today
+	aReserved		: ARRAY [0..15] OF BYTE;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

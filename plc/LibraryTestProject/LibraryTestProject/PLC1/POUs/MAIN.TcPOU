@@ -1,57 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4026.18">
   <POU Name="MAIN" Id="{6229c1e7-7648-4318-a777-35026c64ff5c}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
-	XboxController				: FB_Xbox_Controller('',1);
-	
-	XPlanarMover				: FB_XPlanarMoverStandard;
-	bEnableMover				: BOOL := TRUE;
+	// Gamepad from the AdsGamepad library. An empty NetID means the local machine
+	Gamepad			: FB_Gamepad_Controller('', 1);
+	bEnableMover	: BOOL := TRUE;
 
-	
-	fbXbox_2D_Joystick_XPlanar	: FB_Xbox_2D_Joystick_XPlanar;
-	stOptions					: ST_Xbox_2D_Joystick_XPlanar_Options;
-	bEnableJog					: BOOL;
-	eJogMode					: E_Xbox_XPlanar_JogMode;
+	// Raw stick values. Mapping them onto axes or movers is application code
+	fStickX			: LREAL;
+	fStickY			: LREAL;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[XPlanarMover.Cycle();
-XboxController.Cycle();
+      <ST><![CDATA[Gamepad.Cycle();
 
-IF bEnableMover THEN
-	XPlanarMover.Enable(slogMessage := 'Enabling Mover');
-	IF XPlanarMover.P_Enable.Done THEN
-		bEnableMover := FALSE;
-	END_IF
-END_IF
-
-
-stOptions.eJog_Mode 		:= eJogMode;
-stOptions.fFastJog_Trigger 	:= XboxController.P_Left_Trigger;
-stOptions.bFastJog_Button	:= XboxController.P_Buttons.bA_Button;
-
-fbXbox_2D_Joystick_XPlanar.Jog(
-								bEnable:= bEnableJog AND XboxController.P_Status.bConnected, 
-								stJoystick:= XboxController.P_Left_Joystick, 
-								xpMover:= XPlanarMover, 
-								stOptions:= stOptions);
+// Read the left stick. The jog helper FBs are gone from the library, so how these
+// values drive an axis or a mover is up to the application. See MIGRATION.md
+fStickX := Gamepad.P_Left_Joystick.fX;
+fStickY := Gamepad.P_Left_Joystick.fY;
 ]]></ST>
     </Implementation>
-    <LineIds Name="MAIN">
-      <LineId Id="29" Count="1" />
-      <LineId Id="33" Count="0" />
-      <LineId Id="32" Count="0" />
-      <LineId Id="41" Count="0" />
-      <LineId Id="55" Count="2" />
-      <LineId Id="42" Count="0" />
-      <LineId Id="84" Count="0" />
-      <LineId Id="86" Count="1" />
-      <LineId Id="90" Count="1" />
-      <LineId Id="28" Count="0" />
-      <LineId Id="43" Count="3" />
-      <LineId Id="27" Count="0" />
-      <LineId Id="71" Count="0" />
-    </LineIds>
   </POU>
 </TcPlcObject>

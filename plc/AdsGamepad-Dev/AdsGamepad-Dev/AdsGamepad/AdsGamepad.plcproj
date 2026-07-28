@@ -1,0 +1,128 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <FileVersion>1.0.0.0</FileVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5d0a60ca-2ebf-4a16-8455-065cce7e5c4e}</ProjectGuid>
+    <SubObjectsSortedByName>True</SubObjectsSortedByName>
+    <DownloadApplicationInfo>true</DownloadApplicationInfo>
+    <WriteProductVersion>true</WriteProductVersion>
+    <GenerateTpy>false</GenerateTpy>
+    <Name>AdsGamepad</Name>
+    <ProgramVersion>3.1.4026.24</ProgramVersion>
+    <Application>{a32961f8-6f34-472f-b7c8-bb82820954bf}</Application>
+    <TypeSystem>{8a419ba2-45f4-45a8-8347-694b8f18d82b}</TypeSystem>
+    <Implicit_Task_Info>{3053bbf5-ec26-4321-99df-606161468b68}</Implicit_Task_Info>
+    <Implicit_KindOfTask>{ec33f40a-38b1-4f47-b035-4948881af551}</Implicit_KindOfTask>
+    <Implicit_Jitter_Distribution>{673d9bc9-90e3-4e65-bbc4-0c8a1ffdd8f1}</Implicit_Jitter_Distribution>
+    <LibraryReferences>{b29f5ee5-d38d-497f-ae98-ee34c52a5f1c}</LibraryReferences>
+    <Released>true</Released>
+    <Title>AdsGamepad</Title>
+    <ProjectVersion>2.0.0</ProjectVersion>
+    <Author>Beckhoff USA Community</Author>
+    <Company>Beckhoff Community</Company>
+    <CombineIds>true</CombineIds>
+    <Description>A library to communicate with the ADS Gamepad Service</Description>
+    <SelectedLibraryCategories>
+      <Id>{39c547dd-467a-4eb4-93a9-181b6ae47749}</Id>
+    </SelectedLibraryCategories>
+    <POUsForPropertyAccessIncluded>true</POUsForPropertyAccessIncluded>
+    <GlobalVersionStructureIncluded>true</GlobalVersionStructureIncluded>
+    <LibraryCategories>
+      <LibraryCategory xmlns="">
+        <Id>{39c547dd-467a-4eb4-93a9-181b6ae47749}</Id>
+        <Version>1.0.0.0</Version>
+        <ParentCategory>
+          <Id>{88048283-bfff-4776-a1fb-1862584a5ced}</Id>
+        </ParentCategory>
+        <DefaultName>ADS Gamepad</DefaultName>
+      </LibraryCategory>
+      <LibraryCategory xmlns="">
+        <Id>{88048283-bfff-4776-a1fb-1862584a5ced}</Id>
+        <Version>1.0.0.0</Version>
+        <DefaultName>Beckhoff USA Community</DefaultName>
+      </LibraryCategory>
+    </LibraryCategories>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="DUTs" />
+    <Folder Include="DUTs\LowerLevel" />
+    <Folder Include="FBs" />
+    <Folder Include="Project Information" />
+    <Folder Include="Version" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DUTs\E_Gamepad_Battery_Levels.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\E_Gamepad_Battery_Types.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\E_Gamepad_Handshake_State.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\LowerLevel\ST_Gamepad_Buttons_Bits.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\LowerLevel\ST_Gamepad_State_Bits.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_Gamepad_ADS_Inputs.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_Gamepad_Buttons.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_Gamepad_Command_Status.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_Gamepad_DPad.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_Gamepad_Joystick.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_Gamepad_Rumble.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_Gamepad_Service_Info.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_Gamepad_Status.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\FB_Gamepad_Controller.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Project Information\F_GetCompany.TcPOU">
+      <SubType>Code</SubType>
+      <SystemCall>true</SystemCall>
+    </Compile>
+    <Compile Include="Project Information\F_GetTitle.TcPOU">
+      <SubType>Code</SubType>
+      <SystemCall>true</SystemCall>
+    </Compile>
+    <Compile Include="Project Information\F_GetVersion.TcPOU">
+      <SubType>Code</SubType>
+      <SystemCall>true</SystemCall>
+    </Compile>
+    <Compile Include="Version\Global_Version.TcGVL">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderReference Include="Tc2_System">
+      <DefaultResolution>Tc2_System, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_System</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Module">
+      <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Module</Namespace>
+    </PlaceholderReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AdsGamepad.tmc">
+      <SubType>Content</SubType>
+    </None>
+  </ItemGroup>
+  <ProjectExtensions />
+</Project>
