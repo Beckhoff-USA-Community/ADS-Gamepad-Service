@@ -200,11 +200,9 @@
 					<Name>CPP_Task</Name>
 				</Task>
 			</Tasks>
-		</System>
-		<Cpp>
-			<Project GUID="{829853B1-57CD-4285-95A2-D1F1AEFE3D1C}" Name="ADS_Gamepad" PrjFilePath="ADS_Gamepad\ADS_Gamepad.vcxproj" TmcFilePath="ADS_Gamepad\ADS_Gamepad.tmc">
-				<Instance Id="#x01010010" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
-					<Name>ADS_Gamepad_Obj1 (Gamepad)</Name>
+			<Modules>
+				<Module Id="#x01010010" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
+					<Name>Object1 (Gamepad)</Name>
 					<ImageId>1000</ImageId>
 					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
 						<Name>Gamepad</Name>
@@ -221,6 +219,11 @@
 						<Contexts>
 							<Context>
 								<Id>1</Id>
+								<ManualConfig>
+									<OTCID>#x02010020</OTCID>
+								</ManualConfig>
+								<Priority>1</Priority>
+								<CycleTime>10000000</CycleTime>
 							</Context>
 						</Contexts>
 						<Interfaces>
@@ -554,12 +557,15 @@
 						<InterfacePointerValues>
 							<Value>
 								<Name>CyclicCaller</Name>
-								<OTCID>#x00000000</OTCID>
+								<OTCID>#x02010020</OTCID>
 							</Value>
 						</InterfacePointerValues>
 					</TmcDesc>
-				</Instance>
-			</Project>
+				</Module>
+			</Modules>
+		</System>
+		<Cpp>
+			<Project GUID="{829853B1-57CD-4285-95A2-D1F1AEFE3D1C}" Name="ADS_Gamepad" PrjFilePath="ADS_Gamepad\ADS_Gamepad.vcxproj" TmcFilePath="ADS_Gamepad\ADS_Gamepad.tmc"/>
 		</Cpp>
 	</Project>
 </TcSmProject>
