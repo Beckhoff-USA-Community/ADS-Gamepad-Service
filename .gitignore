@@ -295,8 +295,9 @@ __pycache__/
 _Deployment/
 _Repository/
 
-# Linux publish staging, created by the build step in linux/README.md
+# Linux publish staging and package output, created by the build steps in linux/README.md
 linux/publish/
+linux/*.deb
 
 # Local mkdocs build output
 Documentation/site/

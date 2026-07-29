@@ -1,0 +1,43 @@
+#!/bin/sh
+set -e
+
+TARGET=/opt/ads-gamepad-service
+
+case "$1" in
+    configure)
+        # Service account and the device access group the udev rule grants
+        getent group gamepad > /dev/null || groupadd --system gamepad
+        id -u adsgamepad > /dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin --gid gamepad adsgamepad
+
+        # The TwinCAT usermode router only accepts ADS port registrations
+        # from members of its tcads group
+        if getent group tcads > /dev/null; then
+            usermod -aG tcads adsgamepad
+        fi
+
+        # On the first install the live configuration starts as a copy of
+        # the sample. It is not a package file, so upgrades never touch it.
+        if [ ! -f "$TARGET/appsettings.json" ]; then
+            cp "$TARGET/appsettings.linux.json" "$TARGET/appsettings.json"
+        fi
+        chown -R adsgamepad:gamepad "$TARGET"
+
+        # An installation made with install.sh placed its unit and udev
+        # rule under /etc. The package owns both under /lib now, and a
+        # leftover copy in /etc would shadow the packaged unit.
+        rm -f /etc/systemd/system/adsgamepad.service
+        rm -f /etc/udev/rules.d/70-adsgamepad.rules
+
+        if command -v udevadm > /dev/null; then
+            udevadm control --reload-rules
+            # Only the hidraw nodes need reevaluation for the group grant
+            udevadm trigger --subsystem-match=hidraw
+        fi
+
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload
+            systemctl enable adsgamepad.service
+            systemctl restart adsgamepad.service
+        fi
+        ;;
+esac

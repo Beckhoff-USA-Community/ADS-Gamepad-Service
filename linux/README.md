@@ -17,7 +17,39 @@ library and TcCOM module work exactly as on Windows.
   PlayStation first: a pad that still holds a Bluetooth pairing sends its
   buttons there even while the cable is plugged in here.
 
-## Build and install
+## Install from the Debian package
+
+The simplest install is the Debian package. Every release build produces it
+as a workflow artifact named debian-package, and it can be built locally on
+any Linux machine, from the repository root:
+
+```
+dotnet publish src/AdsGamepadService -c Release -r linux-x64 --self-contained -o linux/publish
+sh linux/build-deb.sh
+```
+
+Copy the package to the target and install it:
+
+```
+sudo apt install ./ads-gamepad-service_2.4.0_amd64.deb
+```
+
+The package performs the same setup as the install script below: it creates
+the adsgamepad service account and the gamepad device access group, installs
+the udev rule for the DualSense, and enables and starts the systemd unit.
+Settings live in /opt/ads-gamepad-service/appsettings.json and survive
+upgrades. Installing the package over an earlier script install takes it
+over in place and keeps the configuration.
+
+Removing the package keeps appsettings.json for a later install; a purge
+removes it as well:
+
+```
+sudo apt remove ads-gamepad-service
+sudo apt purge ads-gamepad-service
+```
+
+## Build and install with the scripts
 
 On your build machine, from the repository root:
 

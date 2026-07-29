@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove)
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload
+        fi
+        if command -v udevadm > /dev/null; then
+            udevadm control --reload-rules 2> /dev/null || true
+        fi
+        echo "ads-gamepad-service was removed. appsettings.json was kept in /opt/ads-gamepad-service."
+        ;;
+    purge)
+        rm -f /opt/ads-gamepad-service/appsettings.json
+        rmdir /opt/ads-gamepad-service 2> /dev/null || true
+        ;;
+esac

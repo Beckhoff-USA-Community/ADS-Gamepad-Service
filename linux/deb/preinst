@@ -1,0 +1,8 @@
+#!/bin/sh
+# A running instance is stopped before any file changes. This also covers
+# taking over an installation that was made with install.sh.
+set -e
+
+if [ -d /run/systemd/system ]; then
+    systemctl stop adsgamepad.service 2> /dev/null || true
+fi

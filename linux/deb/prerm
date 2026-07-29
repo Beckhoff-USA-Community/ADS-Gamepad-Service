@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+if [ -d /run/systemd/system ]; then
+    systemctl stop adsgamepad.service 2> /dev/null || true
+    if [ "$1" = "remove" ]; then
+        systemctl disable adsgamepad.service 2> /dev/null || true
+    fi
+fi

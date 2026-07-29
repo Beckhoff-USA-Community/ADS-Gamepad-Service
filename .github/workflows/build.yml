@@ -114,3 +114,36 @@ jobs:
       - name: Push to GitHub Packages
         if: github.ref_type == 'tag'
         run: dotnet nuget push package-output\*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json --skip-duplicate
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run tests
+        run: dotnet test AdsGamepadService.sln -c Release
+
+      - name: Publish service
+        run: dotnet publish src/AdsGamepadService -c Release -r linux-x64 --self-contained -o linux/publish
+
+      - name: Check the package version against the tag
+        if: github.ref_type == 'tag'
+        run: |
+          tag='${{ github.ref_name }}'
+          version=$(sed -n 's/.*<Version>\(.*\)<\/Version>.*/\1/p' src/AdsGamepadService/AdsGamepadService.csproj | head -n 1)
+          if [ "v$version" != "$tag" ]; then
+            echo "The project version $version does not match the tag $tag." >&2
+            exit 1
+          fi
+
+      - name: Build the Debian package
+        run: sh linux/build-deb.sh
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: debian-package
+          path: linux/*.deb
