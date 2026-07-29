@@ -42,6 +42,7 @@ The module is distributed as source only. You build and sign it yourself. TwinCA
 | OnlineStickCurve | seeded | Live copy of StickCurve. | yes |
 | OnlineTriggerDeadzonePercent | seeded | Live copy of TriggerDeadzonePercent. | yes |
 | OnlineTriggerCurve | seeded | Live copy of TriggerCurve. | yes |
+| bReadExtended | FALSE | When TRUE the module also reads the extended data block. Needs service 2.5.0 or newer. | no |
 
 The tuning values come in two sets. The init set lives on the Parameter (Init) tab, is stored in the project, and survives every activation. When the module starts it copies the init set into the online set, and the shaping math reads only the online set. During commissioning you adjust the Online values on the Parameter (Online) tab and feel the result on the next task cycle, no restart needed. Online changes reset to the init values at the next activation, so when a value feels right, copy it into its init twin to make it permanent.
 
@@ -58,6 +59,21 @@ The module decodes the raw service data into plain variables that link directly 
 * stServiceInfo shows contract and service versions, served by gamepad services from release 2.1.0 on.
 
 On any communication error the module zeroes all decoded outputs, bConnected included, and reports the reason in eCommState.
+
+## Extended data
+
+With bReadExtended set the module also reads the extended block that gamepad services serve from release 2.5.0 on. The reads alternate with the gamepad read, so each block updates at half the task rate. Plan for that before enabling it on a fast task: the gamepad data then refreshes half as often as with the setting off, and nDataAgeCycles shows it. A read that gets no answer at all fails safe exactly like a gamepad read timeout, so enabling the extended block does not lengthen the fail safe reaction time. Against an older service the module notices the missing capability during its startup handshake and skips the extended reads entirely.
+
+The extended values arrive in their own output area, ExtOutputs:
+
+* bExtDataPresent is TRUE while the service supplies extended data for this slot. A slot with an Xbox controller reads all zero with the flag clear.
+* bPS, bMute and bTouchpadClick are the PlayStation buttons beyond the classic surface.
+* nGyroX through nAccelZ are the raw motion sensor values. The units are the sensor's own; interpreting or filtering them is application code.
+* stTouch0 and stTouch1 are the two touchpad contacts with an active flag, a contact counter and the position on the pad.
+* nSequence is the report counter of the pad, widened by the service. A value that keeps moving proves the input stream is alive, so it makes a good watchdog.
+* nExtDataAgeCycles counts task cycles since the last successful extended read, separate from the gamepad age.
+
+An error on the extended read zeroes only the extended values; the gamepad exchange keeps running untouched.
 
 ## Beckhoff RT Linux
 

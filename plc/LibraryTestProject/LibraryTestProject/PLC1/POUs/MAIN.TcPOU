@@ -4,20 +4,15 @@
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
 	// Gamepad from the AdsGamepad library. An empty NetID means the local machine
-	Gamepad			: FB_Gamepad_Controller('', 1);
-
-	// Raw stick values. Mapping them onto axes or movers is application code
-	fStickX			: LREAL;
-	fStickY			: LREAL;
+	XBOX_Elite		: FB_Gamepad_Controller('', 1);
+	XBOX_Adaptive	: FB_Gamepad_Controller('', 2);
+	Dual_Sense		: FB_Gamepad_Controller('', 3);
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[Gamepad.Cycle();
-
-// Read the left stick. The jog helper FBs are gone from the library, so how these
-// values drive an axis or a mover is up to the application. See MIGRATION.md
-fStickX := Gamepad.P_Left_Joystick.fX;
-fStickY := Gamepad.P_Left_Joystick.fY;
+      <ST><![CDATA[XBOX_Elite.Cycle();
+XBOX_Adaptive.Cycle();
+Dual_Sense.Cycle();
 ]]></ST>
     </Implementation>
   </POU>

@@ -14,7 +14,7 @@ namespace AdsGamepadService.Input
        streaming USB reports with live motion data but frozen controls. The
        reader detects that state and logs a warning, because to the PLC it is
        indistinguishable from an idle pad. */
-    internal sealed class DualSenseGamepad : IGamepad, IDisposable
+    internal sealed class DualSenseGamepad : IGamepad, IExtendedGamepad, IDisposable
     {
         private const string WindowsPathMatch = "vid_054c&pid_0ce6";
         // Bus 0003 is USB; the prefix excludes Bluetooth pads like mi_03 does on Windows
@@ -25,7 +25,7 @@ namespace AdsGamepadService.Input
         private const int OutputReportLength = 48;
         private const byte UsbOutputReportId = 0x02;
 
-        private sealed record Snapshot(DualSenseState State, long Tick);
+        private sealed record Snapshot(DualSenseState State, uint Sequence, long Tick);
 
         private readonly ILogger _logger;
         private readonly Thread _reader;
@@ -36,6 +36,7 @@ namespace AdsGamepadService.Input
 
         private DualSenseState _current;
         private bool _connected;
+        private uint _extSequence;
 
         public DualSenseGamepad(int controllerNumber, ILogger logger)
         {
@@ -59,11 +60,13 @@ namespace AdsGamepadService.Input
             if (snapshot is not null && IsFresh(Environment.TickCount64, snapshot.Tick))
             {
                 _current = snapshot.State;
+                _extSequence = snapshot.Sequence;
                 _connected = true;
             }
             else
             {
                 _current = default;
+                _extSequence = 0;
                 _connected = false;
             }
         }
@@ -74,6 +77,13 @@ namespace AdsGamepadService.Input
         internal static bool IsFresh(long nowTick, long reportTick)
         {
             return nowTick - reportTick < StaleReportMs;
+        }
+
+        /* The byte difference counts dropped reports and survives the eight
+           bit wrap, so the wide counter only ever moves forward. */
+        internal static uint AdvanceWideSequence(uint wideSequence, byte lastSequence, byte nextSequence)
+        {
+            return wideSequence + (byte)(nextSequence - lastSequence);
         }
 
         /* The published X carries the physical Y axis and the published Y the
@@ -100,10 +110,36 @@ namespace AdsGamepadService.Input
 
         public GamepadBatteryLevel BatteryLevel => _connected ? GamepadBatteryLevel.Full : GamepadBatteryLevel.None;
 
+        /* Extended data for the contract v1.3 block. The sequence counter is
+           the pad's own report counter widened service side, so a PLC
+           watchdog can tell a live stream from a stuck one without dealing
+           with an eight bit wrap every second. */
+        public bool TryGetExtended(out GamepadExtendedState state)
+        {
+            if (!_connected)
+            {
+                state = default;
+                return false;
+            }
+            state = new GamepadExtendedState(
+                ExtButtons: _current.ExtButtons,
+                GyroX: _current.GyroX,
+                GyroY: _current.GyroY,
+                GyroZ: _current.GyroZ,
+                AccelX: _current.AccelX,
+                AccelY: _current.AccelY,
+                AccelZ: _current.AccelZ,
+                Touch0: _current.Touch0,
+                Touch1: _current.Touch1,
+                Sequence: _extSequence);
+            return true;
+        }
+
         // Test hook so the wire mapping is verifiable without hardware
-        internal void ApplySnapshot(in DualSenseState state)
+        internal void ApplySnapshot(in DualSenseState state, uint sequence = 0)
         {
             _current = state;
+            _extSequence = sequence;
             _connected = true;
         }
 
@@ -216,6 +252,12 @@ namespace AdsGamepadService.Input
             Span<byte> controls = stackalloc byte[9];
             long lastControlChange = Environment.TickCount64;
             bool frozenWarned = false;
+            /* The pad's eight bit report counter widened to 32 bits. Byte
+               arithmetic on the delta keeps dropped reports counted and
+               handles the wrap; the counter restarts with each session. */
+            uint wideSequence = 0;
+            byte lastSequence = 0;
+            bool sequenceSeeded = false;
 
             while (!_stopping)
             {
@@ -229,7 +271,18 @@ namespace AdsGamepadService.Input
                     continue;
                 }
 
-                _latest = new Snapshot(state, Environment.TickCount64);
+                if (sequenceSeeded)
+                {
+                    wideSequence = AdvanceWideSequence(wideSequence, lastSequence, state.Sequence);
+                }
+                else
+                {
+                    sequenceSeeded = true;
+                    wideSequence = state.Sequence;
+                }
+                lastSequence = state.Sequence;
+
+                _latest = new Snapshot(state, wideSequence, Environment.TickCount64);
 
                 buffer.AsSpan(1, 6).CopyTo(controls);
                 buffer.AsSpan(8, 3).CopyTo(controls[6..]);

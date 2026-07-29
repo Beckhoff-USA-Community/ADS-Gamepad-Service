@@ -40,6 +40,16 @@ VAR
 	_stServiceInfo : ST_Gamepad_Service_Info;
 	{attribute 'hide'}
 	_eHandshakeState : E_Gamepad_Handshake_State;
+	{attribute 'hide'}
+	_ReadExtData : ADSREAD;
+	// RAW extended block for debug (Use properties to access items)
+	stGamepadExtInputs : ST_Gamepad_Ext_ADS_Inputs;
+	{attribute 'hide'}
+	_stExtButtons : ST_Gamepad_Ext_Buttons;
+	{attribute 'hide'}
+	_stTouchpad : ST_Gamepad_Touchpad;
+	{attribute 'hide'}
+	_stMotion : ST_Gamepad_Motion;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -444,8 +454,147 @@ SetRumble := THIS^._bSetRumbleEvent;
 ]]></ST>
       </Implementation>
     </Method>
+    <Method Name="ReadExtended" Id="{64a822aa-60ad-4d72-9056-f0bf18e94138}">
+      <Declaration><![CDATA[// Reads the 96 byte extended block, wire contract 1.3. Call this once per
+// PLC cycle in addition to Cycle when the extended data is wanted; it costs
+// one extra ADS read per cycle and programs that never call it behave
+// exactly as before. A service older than 2.5.0 answers with an error and
+// the block then reads all zero, the same fail safe as everywhere else.
+METHOD ReadExtended : BOOL
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Read the current extended block
+THIS^._ReadExtData(
+	NETID:= THIS^._AmsNetId,
+	PORT:= 25733,
+	IDXGRP:= THIS^._IDXGRP + 16#100,
+	IDXOFFS:= 0,
+	LEN:= SIZEOF(THIS^.stGamepadExtInputs),
+	DESTADDR:= ADR(THIS^.stGamepadExtInputs),
+	READ:= TRUE,
+	TMOUT:= T#5S,
+	ERR=>);
+
+// If there is an error in reading from the server, shut all values off
+IF THIS^._ReadExtData.ERR THEN
+	memset(ADR(THIS^.stGamepadExtInputs), 0, SIZEOF(THIS^.stGamepadExtInputs));
+END_IF
+
+// Stop read command
+THIS^._ReadExtData(
+	NETID:= THIS^._AmsNetId,
+	PORT:= 25733,
+	IDXGRP:= THIS^._IDXGRP + 16#100,
+	IDXOFFS:= 0,
+	LEN:= SIZEOF(THIS^.stGamepadExtInputs),
+	DESTADDR:= ADR(THIS^.stGamepadExtInputs),
+	READ:= FALSE,
+	TMOUT:= T#5S,
+	ERR=>);]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Ext_Buttons" Id="{ca3a13c2-105b-4cff-af05-dcab0e8964f2}">
+      <Declaration><![CDATA[{attribute 'monitoring':='call'}
+// Buttons beyond the classic surface, from the extended block
+PROPERTY P_Ext_Buttons : REFERENCE TO ST_Gamepad_Ext_Buttons]]></Declaration>
+      <Get Name="Get" Id="{0bbe9e48-aaeb-42dc-a91a-1c7979d6a3f2}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF (THIS^.stGamepadExtInputs.nExtFlags AND 16#0001) <> 0 THEN
+	THIS^._stExtButtons.bPS 			:= (THIS^.stGamepadExtInputs.nExtButtons AND 16#0001) <> 0;
+	THIS^._stExtButtons.bMute 			:= (THIS^.stGamepadExtInputs.nExtButtons AND 16#0002) <> 0;
+	THIS^._stExtButtons.bTouchpad_Click := (THIS^.stGamepadExtInputs.nExtButtons AND 16#0004) <> 0;
+ELSE
+	THIS^._stExtButtons.bPS 			:= FALSE;
+	THIS^._stExtButtons.bMute 			:= FALSE;
+	THIS^._stExtButtons.bTouchpad_Click := FALSE;
+END_IF
+P_Ext_Buttons REF= THIS^._stExtButtons;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Touchpad" Id="{bcbebd39-73fc-472b-8ab9-b1f84162d742}">
+      <Declaration><![CDATA[{attribute 'monitoring':='call'}
+// The two touchpad contacts from the extended block
+PROPERTY P_Touchpad : REFERENCE TO ST_Gamepad_Touchpad]]></Declaration>
+      <Get Name="Get" Id="{7e713b45-8caf-4524-a002-636afad890ec}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF (THIS^.stGamepadExtInputs.nExtFlags AND 16#0001) <> 0 THEN
+	THIS^._stTouchpad.stPoint1.bActive 		:= THIS^.stGamepadExtInputs.stTouch0.nActive <> 0;
+	THIS^._stTouchpad.stPoint1.nContactId 	:= THIS^.stGamepadExtInputs.stTouch0.nContactId;
+	THIS^._stTouchpad.stPoint1.nX 			:= THIS^.stGamepadExtInputs.stTouch0.nX;
+	THIS^._stTouchpad.stPoint1.nY 			:= THIS^.stGamepadExtInputs.stTouch0.nY;
+	THIS^._stTouchpad.stPoint2.bActive 		:= THIS^.stGamepadExtInputs.stTouch1.nActive <> 0;
+	THIS^._stTouchpad.stPoint2.nContactId 	:= THIS^.stGamepadExtInputs.stTouch1.nContactId;
+	THIS^._stTouchpad.stPoint2.nX 			:= THIS^.stGamepadExtInputs.stTouch1.nX;
+	THIS^._stTouchpad.stPoint2.nY 			:= THIS^.stGamepadExtInputs.stTouch1.nY;
+ELSE
+	memset(ADR(THIS^._stTouchpad), 0, SIZEOF(THIS^._stTouchpad));
+END_IF
+P_Touchpad REF= THIS^._stTouchpad;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Motion" Id="{19bb57ab-f98c-4a7c-b0a8-dd003cbe6dd9}">
+      <Declaration><![CDATA[{attribute 'monitoring':='call'}
+// Raw motion sensor values from the extended block
+PROPERTY P_Motion : REFERENCE TO ST_Gamepad_Motion]]></Declaration>
+      <Get Name="Get" Id="{514492b2-6707-4de9-af0a-1ef03fef6f0d}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF (THIS^.stGamepadExtInputs.nExtFlags AND 16#0001) <> 0 THEN
+	THIS^._stMotion.nGyroX 	:= THIS^.stGamepadExtInputs.nGyroX;
+	THIS^._stMotion.nGyroY 	:= THIS^.stGamepadExtInputs.nGyroY;
+	THIS^._stMotion.nGyroZ 	:= THIS^.stGamepadExtInputs.nGyroZ;
+	THIS^._stMotion.nAccelX := THIS^.stGamepadExtInputs.nAccelX;
+	THIS^._stMotion.nAccelY := THIS^.stGamepadExtInputs.nAccelY;
+	THIS^._stMotion.nAccelZ := THIS^.stGamepadExtInputs.nAccelZ;
+ELSE
+	memset(ADR(THIS^._stMotion), 0, SIZEOF(THIS^._stMotion));
+END_IF
+P_Motion REF= THIS^._stMotion;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Sequence" Id="{64d16bed-4a84-41b0-924b-752cc55846a4}">
+      <Declaration><![CDATA[{attribute 'monitoring':='call'}
+// Report counter from the extended block. A value that keeps moving proves
+// the input stream is alive; a program can watchdog it
+PROPERTY P_Sequence : UDINT]]></Declaration>
+      <Get Name="Get" Id="{21263837-022c-4fce-bc76-71f25a485f36}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Sequence := THIS^.stGamepadExtInputs.nSequence;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <LineIds Name="FB_Gamepad_Controller">
       <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Gamepad_Controller.ReadExtended">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Gamepad_Controller.P_Ext_Buttons.Get">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Gamepad_Controller.P_Touchpad.Get">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Gamepad_Controller.P_Motion.Get">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Gamepad_Controller.P_Sequence.Get">
+      <LineId Id="1" Count="0" />
     </LineIds>
     <LineIds Name="FB_Gamepad_Controller.Cycle">
       <LineId Id="41" Count="0" />

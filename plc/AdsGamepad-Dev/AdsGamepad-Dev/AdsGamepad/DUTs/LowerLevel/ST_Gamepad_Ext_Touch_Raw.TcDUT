@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="ST_Gamepad_Ext_Touch_Raw" Id="{11e6e50b-e42b-4981-a7af-1cf677b808fe}">
+    <Declaration><![CDATA[// One touchpad contact exactly as it arrives in the extended block.
+// Use the P_Touchpad property for the friendly form. Layout is frozen.
+{attribute 'pack_mode' := '4'}
+TYPE ST_Gamepad_Ext_Touch_Raw :
+STRUCT
+	// 1 while a finger is on the pad, 0 otherwise
+	nActive		: USINT;
+	// Counts contacts, so a new touch gets a new number
+	nContactId	: USINT;
+	// Position across the pad, 0 to 1919
+	nX			: UINT;
+	// Position down the pad, 0 to 1079
+	nY			: UINT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

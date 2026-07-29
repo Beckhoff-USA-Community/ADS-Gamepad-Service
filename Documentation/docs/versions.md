@@ -11,8 +11,9 @@ The wire format between the service and its consumers is treated as frozen. Addi
 | 2.2.0 | 1.2 | PlayStation DualSense backend on Windows; Create and Options on the reserved button bits |
 | 2.3.0 | 1.2 | Beckhoff RT Linux support |
 | 2.4.0 | 1.2 | Rewritten documentation site; the service itself is unchanged |
+| 2.5.0 | 1.3 | Extended controller data block; read it with library 2.1.0 or newer |
 
-Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. TcCOM module versions are independent; the module reads the same contract. Any 2.x service serves any consumer, since the controller block never changed shape.
+Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. AdsGamepad 2.1.0 adds the extended block support and works against any 2.x service; against a service older than 2.5.0 the extended data simply reads zero. TcCOM module versions are independent; the module reads the same contract. Any 2.x service serves any consumer, since the controller block never changed shape.
 
 ## The controller block
 
@@ -41,3 +42,25 @@ Rumble: an ADS write of 8 bytes to the same IndexGroup at IndexOffset 16, two RE
 Since contract 1.1 the service answers a 32 byte read at IndexGroup 16#F000: contract major and minor, service major, minor and patch as words, a reserved word, then a capability double word with bit 0 for the XInput backend and bit 1 for the DualSense backend. The remaining bytes are zero.
 
 The PLC library reads this block once at startup and reports the result in P_Handshake_State: Compatible when the contract major matches, Unsupported against a service older than 2.1.0, which does not serve the block, and Mismatch when the service speaks a newer contract major than the library knows. Data exchange keeps running in every case; the handshake informs, it never blocks.
+
+## The extended block
+
+Since contract 1.3 each controller slot additionally answers a read of 96 bytes at IndexGroup controller number times 16#10000 plus 16#100, IndexOffset 0. The block carries the data a DualSense offers beyond a classic gamepad. A slot that cannot supply it, for example an Xbox controller or a disconnected pad, answers all zeroes with success; consumers branch on the flag bit, never on sensor noise. A service older than 2.5.0 answers the read with an error, and the info block capability bit 2 states whether the block is served.
+
+| Offset | Type | Content |
+| --- | --- | --- |
+| 0 | UINT | Size of the block, 96 while served |
+| 2 | UINT | Layout version of the fields below, 1 today |
+| 4 | WORD | Extended buttons: bit 0 PS, bit 1 Mute, bit 2 touchpad click |
+| 6 | WORD | Flags: bit 0 set while this slot supplies extended data |
+| 8 | INT, three times | Gyro X, Y, Z in raw sensor units |
+| 14 | INT, three times | Accelerometer X, Y, Z in raw sensor units |
+| 20 | 6 bytes | First touch contact: active, contact number, X 0 to 1919, Y 0 to 1079 |
+| 26 | 6 bytes | Second touch contact, same shape |
+| 32 | UDINT | Report counter from the pad, widened by the service. A value that keeps moving proves the input stream is alive |
+| 36 | 4 bytes | Reserved for battery detail, zero today |
+| 40 | 56 bytes | Reserved, zero |
+
+The motion values are raw on purpose: interpreting or filtering them is application code, like everything else in this project. The Create and Options buttons are not repeated here; they stay on bits 10 and 11 of the classic button word.
+
+In the PLC library the block is read by calling ReadExtended() once per cycle in addition to Cycle(). It costs one extra ADS read per cycle, and programs that never call it behave exactly as before. The values arrive through P_Ext_Buttons, P_Touchpad, P_Motion and P_Sequence.

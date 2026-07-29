@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="ST_Gamepad_Ext_Buttons" Id="{cf10409b-50af-42f6-9541-74b6526318c1}">
+    <Declaration><![CDATA[// Buttons beyond the classic gamepad surface. A PlayStation pad supplies
+// them through the extended block; on other pads they stay FALSE.
+TYPE ST_Gamepad_Ext_Buttons :
+STRUCT
+	// The PS logo button
+	bPS				: BOOL;
+	// The microphone mute button
+	bMute			: BOOL;
+	// The touchpad pressed as a button
+	bTouchpad_Click	: BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -193,6 +193,38 @@
         <Hide GUID="{2bcd8da1-3741-4014-992c-44c077fedd29}" />
       </Hides>
     </DataType>
+    <DataType>
+      <Name GUID="{6687eafa-79fc-494b-860e-58d797262606}">ST_GamepadTouchPoint</Name>
+      <BitSize>48</BitSize>
+      <SubItem>
+        <Name>bActive</Name>
+        <Type GUID="{18071995-0000-0000-0000-000000000030}">BOOL</Type>
+        <Comment>TRUE while a finger touches the pad at this slot.</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>0</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>nContactId</Name>
+        <Type GUID="{18071995-0000-0000-0000-000000000001}">BYTE</Type>
+        <Comment>Counts contacts, a new touch gets a new number.</Comment>
+        <BitSize>8</BitSize>
+        <BitOffs>8</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>nX</Name>
+        <Type GUID="{18071995-0000-0000-0000-000000000005}">UINT</Type>
+        <Comment>Position across the pad, 0 to 1919.</Comment>
+        <BitSize>16</BitSize>
+        <BitOffs>16</BitOffs>
+      </SubItem>
+      <SubItem>
+        <Name>nY</Name>
+        <Type GUID="{18071995-0000-0000-0000-000000000005}">UINT</Type>
+        <Comment>Position down the pad, 0 to 1079.</Comment>
+        <BitSize>16</BitSize>
+        <BitOffs>32</BitOffs>
+      </SubItem>
+    </DataType>
   </DataTypes>
   <Groups>
     <Group SortOrder="701">
@@ -339,6 +371,13 @@
           <PTCID>#x0000000D</PTCID>
           <ContextId>1</ContextId>
         </Parameter>
+        <Parameter>
+          <Name>bReadExtended</Name>
+          <Comment TxtId=""><![CDATA[When TRUE the module also reads the extended block of wire contract 1.3, alternating with the gamepad read, so both run at half the task rate. Needs service 2.5.0 or newer; against an older service the extended outputs stay zero. FALSE keeps the module behavior of earlier versions.]]></Comment>
+          <BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+          <PTCID>#x0000000E</PTCID>
+          <ContextId>1</ContextId>
+        </Parameter>
       </Parameters>
       <DataAreas>
         <DataArea>
@@ -452,6 +491,81 @@
             <BaseType GUID="{9fa0a70f-30bb-4a3d-96db-c01bf224e72b}">ST_GamepadServiceInfo</BaseType>
           </Symbol>
         </DataArea>
+        <DataArea>
+          <AreaNo AreaType="OutputSrc" CreateSymbols="true">2</AreaNo>
+          <Name>ExtOutputs</Name>
+          <ContextId>1</ContextId>
+          <Symbol>
+            <Name>bExtDataPresent</Name>
+            <Comment>TRUE while the service supplies extended data for this slot. All values below read zero while it is FALSE.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>bPS</Name>
+            <Comment>TRUE while the PS logo button is pressed.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>bMute</Name>
+            <Comment>TRUE while the microphone mute button is pressed.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>bTouchpadClick</Name>
+            <Comment>TRUE while the touchpad is pressed in as a button.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>nGyroX</Name>
+            <Comment>Raw gyroscope value. The units are the sensor's own.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000006}">INT</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>nGyroY</Name>
+            <Comment>Raw gyroscope value. The units are the sensor's own.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000006}">INT</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>nGyroZ</Name>
+            <Comment>Raw gyroscope value. The units are the sensor's own.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000006}">INT</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>nAccelX</Name>
+            <Comment>Raw accelerometer value. At rest it shows gravity.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000006}">INT</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>nAccelY</Name>
+            <Comment>Raw accelerometer value. At rest it shows gravity.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000006}">INT</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>nAccelZ</Name>
+            <Comment>Raw accelerometer value. At rest it shows gravity.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000006}">INT</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>stTouch0</Name>
+            <Comment>First touchpad contact.</Comment>
+            <BaseType GUID="{6687eafa-79fc-494b-860e-58d797262606}">ST_GamepadTouchPoint</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>stTouch1</Name>
+            <Comment>Second touchpad contact.</Comment>
+            <BaseType GUID="{6687eafa-79fc-494b-860e-58d797262606}">ST_GamepadTouchPoint</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>nSequence</Name>
+            <Comment>Report counter from the pad, widened by the service. A value that keeps moving proves the input stream is alive.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>nExtDataAgeCycles</Name>
+            <Comment>Task cycles since the last successful extended read. Climbs forever while extended reads are off or failing.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
+          </Symbol>
+        </DataArea>
       </DataAreas>
       <InterfacePointers>
         <InterfacePointer>
@@ -466,6 +580,6 @@
   </Modules>
   <Library>
     <Name>ADS_Gamepad</Name>
-    <Version>0.0.0.7</Version>
+    <Version>0.0.0.9</Version>
   </Library>
 </TcModuleClass>

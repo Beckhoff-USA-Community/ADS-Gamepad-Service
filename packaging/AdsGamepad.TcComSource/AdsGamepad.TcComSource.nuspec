@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>Beckhoff-USA-Community.XAE.TcComSource.AdsGamepad</id>
-    <version>0.0.0.7</version>
+    <version>0.0.0.9</version>
     <title>ADS Gamepad TcCOM Module Source</title>
     <authors>Beckhoff Automation LLC</authors>
     <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>

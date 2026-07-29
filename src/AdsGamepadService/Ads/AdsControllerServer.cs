@@ -19,7 +19,12 @@ namespace AdsGamepadService
               the sum of IndexGroup and IndexOffset (0x10010 to 0x40010).
        Info:  IndexGroup 0xF000 answers with the 32 byte service info block
               (contract version, service version, capabilities). Added in
-              contract v1.1; the controller blocks above are untouched. */
+              contract v1.1; the controller blocks above are untouched.
+       Ext:   IndexGroup controller number times 0x10000 plus 0x100 answers
+              with the 96 byte extended block (extra buttons, motion, touch,
+              report counter). Added in contract v1.3. A slot whose backend
+              has no extended data answers success with 96 zero bytes, the
+              same fail safe shape as a disconnected controller. */
     public class AdsControllerServer : AdsServer
     {
         /* Wire image of one controller. The layout is pinned so the 32 byte
@@ -52,21 +57,65 @@ namespace AdsGamepadService
             public uint Capabilities;
         }
 
+        /* One touchpad contact in the extended block, six bytes. */
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        internal struct AdsTouchPoint
+        {
+            public byte Active;
+            public byte ContactId;
+            public ushort X;
+            public ushort Y;
+        }
+
+        /* Wire image of the extended block, contract v1.3. Serialized into a
+           96 byte reply; everything past this struct is reserved and stays
+           zero until a later contract minor assigns meaning. The battery
+           bytes are reserved zeroes too, until their report semantics are
+           pinned against real charge states. */
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        internal struct AdsGamepadExtInputs
+        {
+            public ushort ExtSize;
+            public ushort ExtLayoutVersion;
+            public ushort ExtButtons;
+            public ushort ExtFlags;
+            public short GyroX;
+            public short GyroY;
+            public short GyroZ;
+            public short AccelX;
+            public short AccelY;
+            public short AccelZ;
+            public AdsTouchPoint Touch0;
+            public AdsTouchPoint Touch1;
+            public uint Sequence;
+            public byte BatteryPercent;
+            public byte BatteryFlags;
+            public ushort Reserved;
+        }
+
         internal const int MaximumControllers = 4;
         internal const int InputStructSize = 32;
         internal const int ServiceInfoBlockSize = 32;
         internal const int ServiceInfoStructSize = 16;
+        internal const int ExtBlockSize = 96;
+        internal const int ExtStructSize = 40;
+        internal const ushort ExtBlockLayoutVersion = 1;
+        internal const ushort ExtFlagDataPresent = 0x0001;
 
         /* 0xF000 sits outside every controller read group and every rumble
            sum, so contract v1 clients never collide with it. */
         internal const uint ServiceInfoIndexGroup = 0xF000;
         internal const ushort ContractVersionMajor = 1;
-        internal const ushort ContractVersionMinor = 2;
+        internal const ushort ContractVersionMinor = 3;
         internal const uint CapabilityXInputBackend = 1u << 0;
         internal const uint CapabilityDualSenseBackend = 1u << 1;
+        internal const uint CapabilityExtendedBlock = 1u << 2;
 
         private const uint ReadGroupStride = 0x10000;
         private const uint RumbleCommandOffset = 0x10;
+        /* The extended groups 0x10100 to 0x40100 are disjoint from the
+           controller groups, the info group, and every rumble sum. */
+        private const uint ExtReadGroupOffset = 0x100;
 
         private readonly ILogger _logger;
         private readonly IGamepad[] _gamepads;
@@ -87,6 +136,11 @@ namespace AdsGamepadService
             {
                 throw new InvalidOperationException(
                     $"AdsServiceInfo must marshal to exactly {ServiceInfoStructSize} bytes, got {Marshal.SizeOf<AdsServiceInfo>()}.");
+            }
+            if (Marshal.SizeOf<AdsGamepadExtInputs>() != ExtStructSize)
+            {
+                throw new InvalidOperationException(
+                    $"AdsGamepadExtInputs must marshal to exactly {ExtStructSize} bytes, got {Marshal.SizeOf<AdsGamepadExtInputs>()}.");
             }
         }
 
@@ -173,6 +227,11 @@ namespace AdsGamepadService
                 return Task.FromResult(ResultReadBytes.CreateSuccess(SerializeServiceInfo(BuildServiceInfo()).AsMemory()));
             }
 
+            if (TryGetControllerIndexForExtRead(indexGroup, out int extIndex))
+            {
+                return Task.FromResult(ResultReadBytes.CreateSuccess(BuildExtPayload(_gamepads[extIndex]).AsMemory()));
+            }
+
             if (!TryGetControllerIndexForRead(indexGroup, out int index))
             {
                 return Task.FromResult(ResultReadBytes.CreateError(AdsErrorCode.DeviceInvalidGroup));
@@ -209,6 +268,23 @@ namespace AdsGamepadService
                 gamepad.Rumble(leftMotor, rightMotor);
                 return Task.FromResult(ResultWrite.CreateSuccess());
             }
+        }
+
+        /* Extended reads select the controller by IndexGroup alone:
+           0x10100 to 0x40100 for controllers 1 to 4, contract v1.3. */
+        internal static bool TryGetControllerIndexForExtRead(uint indexGroup, out int index)
+        {
+            if (indexGroup % ReadGroupStride == ExtReadGroupOffset)
+            {
+                uint number = indexGroup / ReadGroupStride;
+                if (number >= 1 && number <= MaximumControllers)
+                {
+                    index = (int)number - 1;
+                    return true;
+                }
+            }
+            index = -1;
+            return false;
         }
 
         /* Read requests select the controller by IndexGroup alone:
@@ -252,23 +328,39 @@ namespace AdsGamepadService
         {
             lock (_sync)
             {
-                gamepad.Update();
-
-                int slot = gamepad.ControllerNumber - 1;
-                if (gamepad.Connected != _lastConnected[slot])
-                {
-                    _lastConnected[slot] = gamepad.Connected;
-                    if (gamepad.Connected)
-                    {
-                        _logger.LogInformation("Controller {Number} connected.", gamepad.ControllerNumber);
-                    }
-                    else
-                    {
-                        _logger.LogInformation("Controller {Number} disconnected.", gamepad.ControllerNumber);
-                    }
-                }
-
+                UpdateAndLogTransition(gamepad);
                 return SerializeInputs(BuildInputs(gamepad));
+            }
+        }
+
+        private byte[] BuildExtPayload(IGamepad gamepad)
+        {
+            lock (_sync)
+            {
+                UpdateAndLogTransition(gamepad);
+                return SerializeExtInputs(BuildExtInputs(gamepad));
+            }
+        }
+
+        /* Both read paths poll the backend, so a program that only reads the
+           extended block still drives the connect and disconnect log lines;
+           the stored state keeps each transition to a single line. */
+        private void UpdateAndLogTransition(IGamepad gamepad)
+        {
+            gamepad.Update();
+
+            int slot = gamepad.ControllerNumber - 1;
+            if (gamepad.Connected != _lastConnected[slot])
+            {
+                _lastConnected[slot] = gamepad.Connected;
+                if (gamepad.Connected)
+                {
+                    _logger.LogInformation("Controller {Number} connected.", gamepad.ControllerNumber);
+                }
+                else
+                {
+                    _logger.LogInformation("Controller {Number} disconnected.", gamepad.ControllerNumber);
+                }
             }
         }
 
@@ -300,6 +392,50 @@ namespace AdsGamepadService
             return payload;
         }
 
+        /* Pure assembly of the extended block. A slot whose backend has no
+           extended data, and a disconnected pad, both yield the all zero
+           struct: consumers branch on the data present flag, never on noise,
+           and zeroes are the fail safe state everywhere in this contract. */
+        internal static AdsGamepadExtInputs BuildExtInputs(IGamepad gamepad)
+        {
+            var inputs = default(AdsGamepadExtInputs);
+            if (gamepad is IExtendedGamepad extended && gamepad.Connected && extended.TryGetExtended(out GamepadExtendedState state))
+            {
+                inputs.ExtSize = ExtBlockSize;
+                inputs.ExtLayoutVersion = ExtBlockLayoutVersion;
+                inputs.ExtButtons = state.ExtButtons;
+                inputs.ExtFlags = ExtFlagDataPresent;
+                inputs.GyroX = state.GyroX;
+                inputs.GyroY = state.GyroY;
+                inputs.GyroZ = state.GyroZ;
+                inputs.AccelX = state.AccelX;
+                inputs.AccelY = state.AccelY;
+                inputs.AccelZ = state.AccelZ;
+                inputs.Touch0 = ToWireTouch(state.Touch0);
+                inputs.Touch1 = ToWireTouch(state.Touch1);
+                inputs.Sequence = state.Sequence;
+            }
+            return inputs;
+        }
+
+        private static AdsTouchPoint ToWireTouch(in GamepadTouchPoint point)
+        {
+            return new AdsTouchPoint
+            {
+                Active = point.Active ? (byte)1 : (byte)0,
+                ContactId = point.ContactId,
+                X = point.X,
+                Y = point.Y,
+            };
+        }
+
+        internal static byte[] SerializeExtInputs(in AdsGamepadExtInputs inputs)
+        {
+            byte[] payload = new byte[ExtBlockSize];
+            MemoryMarshal.Write(payload, in inputs);
+            return payload;
+        }
+
         /* Pure assembly of the service info block. The service version is
            read from the assembly at runtime, so the project Version property
            stays the single source of that number. The capability bits state
@@ -316,7 +452,7 @@ namespace AdsGamepadService
                 ServiceMinor = (ushort)version.Minor,
                 ServicePatch = (ushort)Math.Max(version.Build, 0),
                 Reserved = 0,
-                Capabilities = CapabilityXInputBackend | CapabilityDualSenseBackend,
+                Capabilities = CapabilityXInputBackend | CapabilityDualSenseBackend | CapabilityExtendedBlock,
             };
         }
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="ST_Gamepad_Motion" Id="{bb117734-ca49-4da1-b0a8-a5bd330a13db}">
+    <Declaration><![CDATA[// Raw motion sensor values from the pad. The units are the sensor's own;
+// interpreting or filtering them is application code. At rest the gyro
+// values show small noise and the accelerometer shows gravity.
+TYPE ST_Gamepad_Motion :
+STRUCT
+	nGyroX	: INT;
+	nGyroY	: INT;
+	nGyroZ	: INT;
+	nAccelX	: INT;
+	nAccelY	: INT;
+	nAccelZ	: INT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

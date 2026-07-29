@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="ST_Gamepad_Ext_ADS_Inputs" Id="{e304ca42-e425-41d3-bc4f-8e4f81af54db}">
+    <Declaration><![CDATA[// Mirror of the 96 byte extended block served per controller since wire
+// contract 1.3. Older services answer the read with an error and the
+// struct then reads all zero. A slot without extended data, for example
+// an Xbox controller, reads all zero with the present flag clear.
+// Layout is frozen.
+{attribute 'pack_mode' := '4'}
+TYPE ST_Gamepad_Ext_ADS_Inputs :
+STRUCT
+	// Size of the block, 96 when the service serves it
+	nExtSize			: UINT;
+	// Layout version of the fields below, 1 today
+	nExtLayoutVersion	: UINT;
+	// Bit 0 PS, bit 1 Mute, bit 2 touchpad click
+	nExtButtons			: WORD;
+	// Bit 0 set means this slot supplies extended data right now
+	nExtFlags			: WORD;
+	// Raw motion sensor values. Interpreting them is application code
+	nGyroX				: INT;
+	nGyroY				: INT;
+	nGyroZ				: INT;
+	nAccelX				: INT;
+	nAccelY				: INT;
+	nAccelZ				: INT;
+	// Up to two touchpad contacts
+	stTouch0			: ST_Gamepad_Ext_Touch_Raw;
+	stTouch1			: ST_Gamepad_Ext_Touch_Raw;
+	// Report counter from the pad, widened by the service. A value that
+	// keeps moving proves the input stream is alive
+	nSequence			: UDINT;
+	// Reserved until the battery report bytes are verified, zero today
+	nBatteryPercent		: USINT;
+	nBatteryFlags		: USINT;
+	nReserved			: UINT;
+	// Reserved for future contract versions, always zero today
+	aReserved			: ARRAY [0..55] OF BYTE;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
