@@ -17,6 +17,11 @@ builder.Services.AddWindowsService(options =>
     options.ServiceName = "ADS Gamepad Service";
 });
 
+/* On Linux under systemd this switches the lifetime to Type=notify
+   readiness signaling and journal friendly console output. Outside of
+   systemd, exactly like AddWindowsService outside the SCM, it does nothing. */
+builder.Services.AddSystemd();
+
 /* Without this the Event Log source would default to the assembly name.
    Keeping it equal to the display name means operators find the log
    entries where the documentation says they are. The platform check is

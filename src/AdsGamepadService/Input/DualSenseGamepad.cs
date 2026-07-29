@@ -1,25 +1,24 @@
-using System.Runtime.Versioning;
 using Microsoft.Extensions.Logging;
-using Microsoft.Win32.SafeHandles;
 
 namespace AdsGamepadService.Input
 {
-    /* Reads one wired PlayStation 5 DualSense controller over raw HID. A
-       background thread blocks on the interrupt pipe, which delivers a report
-       roughly every four milliseconds while the pad is connected, and stores
-       the newest decoded state. Update just takes that snapshot, so the ADS
-       callback never waits on the device. Reads and writes use two separate
-       handles: on a single synchronous handle Windows serializes the
-       operations, and a rumble write would queue behind the blocked read.
+    /* Reads one wired PlayStation 5 DualSense controller over raw HID, on
+       Windows through the HID class API and on Linux through the hidraw
+       device node; the report bytes are identical on both. A background
+       thread blocks on the device, which delivers a report roughly every
+       four milliseconds while the pad is connected, and stores the newest
+       decoded state. Update just takes that snapshot, so the ADS callback
+       never waits on the device.
 
        A DualSense that holds a Bluetooth session with another host keeps
        streaming USB reports with live motion data but frozen controls. The
        reader detects that state and logs a warning, because to the PLC it is
        indistinguishable from an idle pad. */
-    [SupportedOSPlatform("windows")]
     internal sealed class DualSenseGamepad : IGamepad, IDisposable
     {
-        private const string VidPidMatch = "vid_054c&pid_0ce6";
+        private const string WindowsPathMatch = "vid_054c&pid_0ce6";
+        // Bus 0003 is USB; the prefix excludes Bluetooth pads like mi_03 does on Windows
+        private const string LinuxHidIdMatch = "0003:0000054C:00000CE6";
         private const int ReconnectDelayMs = 1000;
         private const long StaleReportMs = 500;
         private const long FrozenControlsWarnMs = 10000;
@@ -30,11 +29,10 @@ namespace AdsGamepadService.Input
 
         private readonly ILogger _logger;
         private readonly Thread _reader;
-        private readonly object _writeSync = new();
+        private readonly object _channelSync = new();
         private volatile bool _stopping;
         private volatile Snapshot? _latest;
-        private SafeFileHandle? _readHandle;
-        private SafeFileHandle? _writeHandle;
+        private IHidChannel? _channel;
 
         private DualSenseState _current;
         private bool _connected;
@@ -124,70 +122,72 @@ namespace AdsGamepadService.Input
             report[3] = GamepadMath.RumbleMotorByte(rightMotorPercent);
             report[4] = GamepadMath.RumbleMotorByte(leftMotorPercent);
 
-            /* The lock pairs with the reader closing the write handle, and
-               the catch covers a close that lands inside the call anyway. A
-               rumble command lost to a disconnecting pad is the right
-               outcome, an exception into the ADS dispatch is not. */
-            lock (_writeSync)
+            lock (_channelSync)
             {
-                SafeFileHandle? handle = _writeHandle;
-                if (handle is null || handle.IsInvalid || handle.IsClosed)
-                {
-                    return;
-                }
-                try
-                {
-                    HidNative.WriteFile(handle, report, (uint)report.Length, out _, 0);
-                }
-                catch (ObjectDisposedException)
-                {
-                }
+                _channel?.WriteReport(report);
             }
         }
 
-        /* Shutdown has no way to abort a synchronous read: the interop layer
-           keeps the handle alive until the call returns. A streaming pad
-           returns within milliseconds and the loop then sees the stop flag;
-           a silent device is bounded by the join timeout and the leftover
-           background thread dies with the process. */
+        /* Shutdown has no way to abort a blocked synchronous read; a
+           streaming pad returns within milliseconds and the loop then sees
+           the stop flag, and a silent device is bounded by the join timeout
+           with the leftover background thread dying with the process. */
         public void Dispose()
         {
             _stopping = true;
-            _readHandle?.Dispose();
-            CloseWriteHandle();
+            CloseChannel();
             _reader.Join(TimeSpan.FromSeconds(2));
         }
 
-        private void CloseWriteHandle()
+        private void CloseChannel()
         {
-            lock (_writeSync)
+            lock (_channelSync)
             {
-                _writeHandle?.Dispose();
-                _writeHandle = null;
+                _channel?.Dispose();
+                _channel = null;
             }
+        }
+
+        private static IHidChannel? OpenChannel()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return WindowsHidChannel.Open(WindowsPathMatch);
+            }
+            return LinuxHidChannel.Open(LinuxHidIdMatch);
         }
 
         private void ReadLoop()
         {
             while (!_stopping)
             {
-                if (!OpenDevice())
+                IHidChannel? channel = OpenChannel();
+                if (channel is null)
                 {
                     Thread.Sleep(ReconnectDelayMs);
                     continue;
+                }
+                lock (_channelSync)
+                {
+                    _channel = channel;
                 }
 
                 _logger.LogInformation("DualSense connected on slot {Slot}.", ControllerNumber);
                 try
                 {
-                    ReadReports(_readHandle!);
+                    ReadReports(channel);
+                }
+                catch (Exception ex)
+                {
+                    /* Nothing in the loop is expected to throw, but an
+                       unhandled exception on this thread would take the whole
+                       service down. One reconnect cycle is the better price. */
+                    _logger.LogError(ex, "DualSense reader on slot {Slot} failed unexpectedly.", ControllerNumber);
                 }
                 finally
                 {
                     _latest = null;
-                    _readHandle?.Dispose();
-                    _readHandle = null;
-                    CloseWriteHandle();
+                    CloseChannel();
                     if (!_stopping)
                     {
                         _logger.LogInformation("DualSense disconnected from slot {Slot}.", ControllerNumber);
@@ -203,39 +203,34 @@ namespace AdsGamepadService.Input
             }
         }
 
-        private void ReadReports(SafeFileHandle handle)
+        private void ReadReports(IHidChannel channel)
         {
             byte[] buffer = new byte[DualSenseReport.UsbInputReportLength];
             /* Control bytes are 1 to 6 and 8 to 10. Byte 7 is a sequence
                counter that changes with every report, so it must stay out of
                the comparison or the frozen state could never be detected. */
             byte[] lastControls = new byte[9];
+            /* Allocated once outside the loop: stackalloc space is only
+               reclaimed on method return, so per iteration it would grow the
+               stack until the thread dies. */
+            Span<byte> controls = stackalloc byte[9];
             long lastControlChange = Environment.TickCount64;
             bool frozenWarned = false;
 
             while (!_stopping)
             {
-                uint read;
-                try
+                int read = channel.ReadReport(buffer);
+                if (read < 0)
                 {
-                    if (!HidNative.ReadFile(handle, buffer, (uint)buffer.Length, out read, 0))
-                    {
-                        return;
-                    }
-                }
-                catch (ObjectDisposedException)
-                {
-                    // The service is shutting down and closed the handle
                     return;
                 }
-                if (read == 0 || !DualSenseReport.TryParse(buffer.AsSpan(0, (int)read), out DualSenseState state))
+                if (read == 0 || !DualSenseReport.TryParse(buffer.AsSpan(0, read), out DualSenseState state))
                 {
                     continue;
                 }
 
                 _latest = new Snapshot(state, Environment.TickCount64);
 
-                Span<byte> controls = stackalloc byte[9];
                 buffer.AsSpan(1, 6).CopyTo(controls);
                 buffer.AsSpan(8, 3).CopyTo(controls[6..]);
                 if (!controls.SequenceEqual(lastControls))
@@ -253,58 +248,6 @@ namespace AdsGamepadService.Input
                         ControllerNumber, FrozenControlsWarnMs / 1000);
                 }
             }
-        }
-
-        private bool OpenDevice()
-        {
-            /* Only the gamepad collection on USB interface three of a real
-               pad is accepted. A Bluetooth DualSense enumerates with a
-               different path shape and never matches the filter, and other
-               matches would be wrappers or clones with unverified reports. */
-            string? path = null;
-            foreach (string candidate in HidNative.ListHidInterfacePaths())
-            {
-                if (candidate.Contains(VidPidMatch, StringComparison.OrdinalIgnoreCase) &&
-                    candidate.Contains("mi_03", StringComparison.OrdinalIgnoreCase))
-                {
-                    path = candidate;
-                    break;
-                }
-            }
-            if (path is null)
-            {
-                return false;
-            }
-
-            SafeFileHandle readHandle = HidNative.CreateFile(
-                path,
-                HidNative.GENERIC_READ,
-                HidNative.FILE_SHARE_READ | HidNative.FILE_SHARE_WRITE,
-                0, HidNative.OPEN_EXISTING, 0, 0);
-            if (readHandle.IsInvalid)
-            {
-                readHandle.Dispose();
-                return false;
-            }
-
-            SafeFileHandle writeHandle = HidNative.CreateFile(
-                path,
-                HidNative.GENERIC_WRITE,
-                HidNative.FILE_SHARE_READ | HidNative.FILE_SHARE_WRITE,
-                0, HidNative.OPEN_EXISTING, 0, 0);
-            if (writeHandle.IsInvalid)
-            {
-                writeHandle.Dispose();
-                readHandle.Dispose();
-                return false;
-            }
-
-            _readHandle = readHandle;
-            lock (_writeSync)
-            {
-                _writeHandle = writeHandle;
-            }
-            return true;
         }
     }
 }

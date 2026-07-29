@@ -127,11 +127,10 @@ namespace AdsGamepadService
             ArgumentOutOfRangeException.ThrowIfLessThan(maxControllers, 1);
             ArgumentOutOfRangeException.ThrowIfGreaterThan(maxControllers, MaximumControllers);
 
-            if (!OperatingSystem.IsWindows())
-            {
-                throw new PlatformNotSupportedException("The input backends exist for Windows only today.");
-            }
-
+            /* XInput exists only on Windows. On Linux such a slot answers as
+               disconnected, with one log line naming the reason, so a config
+               written for a Windows box degrades loudly instead of silently. */
+            ILogger factoryLogger = loggerFactory.CreateLogger<AdsControllerServer>();
             var gamepads = new IGamepad[MaximumControllers];
             for (int i = 0; i < MaximumControllers; ++i)
             {
@@ -141,9 +140,21 @@ namespace AdsGamepadService
                     continue;
                 }
                 string source = slotSources is not null && i < slotSources.Length ? slotSources[i] : ServiceOptions.SourceXInput;
-                gamepads[i] = string.Equals(source, ServiceOptions.SourceDualSense, StringComparison.OrdinalIgnoreCase)
-                    ? new DualSenseGamepad(i + 1, loggerFactory.CreateLogger<DualSenseGamepad>())
-                    : new XInputGamepad(i + 1);
+                if (string.Equals(source, ServiceOptions.SourceDualSense, StringComparison.OrdinalIgnoreCase))
+                {
+                    gamepads[i] = new DualSenseGamepad(i + 1, loggerFactory.CreateLogger<DualSenseGamepad>());
+                }
+                else if (OperatingSystem.IsWindows())
+                {
+                    gamepads[i] = new XInputGamepad(i + 1);
+                }
+                else
+                {
+                    factoryLogger.LogWarning(
+                        "Slot {Slot} uses the XInput backend, which exists on Windows only. The slot answers as disconnected on this system.",
+                        i + 1);
+                    gamepads[i] = new DisabledGamepad(i + 1);
+                }
             }
             return gamepads;
         }

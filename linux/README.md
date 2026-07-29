@@ -1,0 +1,60 @@
+# ADS Gamepad Service on Beckhoff RT Linux
+
+The service runs on Beckhoff RT Linux as a systemd service and reads a wired
+PlayStation 5 DualSense controller over the hidraw interface. Xbox
+controllers are not supported on Linux: the Beckhoff kernel does not include
+the driver they need, so Linux is DualSense only. The ADS side is unchanged,
+the service registers port 25733 with the local TwinCAT router and the PLC
+library and TcCOM module work exactly as on Windows.
+
+## Requirements
+
+* A Beckhoff RT Linux system with the TwinCAT runtime installed and running
+  (the tc31-xar-um package; the service registers with its router).
+* The .NET SDK, version 10 or later, on the machine you build on. The
+  target needs no .NET install, the publish output is self contained.
+* A wired DualSense controller. Unpair it from every phone, laptop or
+  PlayStation first: a pad that still holds a Bluetooth pairing sends its
+  buttons there even while the cable is plugged in here.
+
+## Build and install
+
+On your build machine, from the repository root:
+
+```
+dotnet publish src/AdsGamepadService -c Release -r linux-x64 --self-contained -o linux/publish
+```
+
+Copy the linux directory to the target, then on the target:
+
+```
+cd linux
+sudo sh ./install.sh
+```
+
+The install creates the adsgamepad service account and the gamepad device
+access group, installs a udev rule for the DualSense, and starts the
+systemd unit. Settings live in /opt/ads-gamepad-service/appsettings.json
+and survive upgrades; the Linux default maps controller slot one to the
+DualSense. See CONFIGURATION.md in the repository root for every setting.
+
+Watch the service:
+
+```
+systemctl status adsgamepad
+journalctl -u adsgamepad -f
+```
+
+To remove the service:
+
+```
+sudo sh ./uninstall.sh
+```
+
+## Notes
+
+* The service registers under the AMS Net ID of the Linux system. A PLC on
+  the same machine reaches it with an empty NetID string in
+  FB_Gamepad_Controller, exactly like on Windows.
+* Rumble works over the same wire contract; the service writes it to the
+  pad through hidraw.

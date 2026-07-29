@@ -1,0 +1,8 @@
+# Anything that runs on a Linux system must stay LF, a CRLF shell script
+# fails at the shebang line.
+linux/** text eol=lf
+*.sh text eol=lf
+
+# The publish staging is ignored, but a future binary under linux must
+# never be line ending normalized
+linux/publish/** -text

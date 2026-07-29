@@ -1,0 +1,16 @@
+[Unit]
+Description=ADS Gamepad Service
+After=network.target TcSystemServiceUm.service
+Wants=TcSystemServiceUm.service
+
+[Service]
+Type=notify
+ExecStart=/opt/ads-gamepad-service/AdsGamepadService
+WorkingDirectory=/opt/ads-gamepad-service
+User=adsgamepad
+SupplementaryGroups=gamepad tcads
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

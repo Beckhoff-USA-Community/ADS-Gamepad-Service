@@ -57,12 +57,12 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 
 * Bluetooth operation, battery detail, and the data a DualSense offers beyond a classic gamepad, such as the touchpad and the motion sensors, are planned as a separate versioned extension of the wire format. The current 32 byte block stays untouched so existing programs never notice the addition.
 
-## Phase 7: Linux support (stretch goal)
+## Phase 7: Linux support (complete)
 
-* Beckhoff offers a real time Linux runtime on its newer controllers, and the service should run there as a systemd unit.
-* The repository will gain a directory with build and install instructions so a user can clone the repository, change into that directory, and run a build followed by an install.
-* Controller input on Linux uses the standard evdev and hidraw interfaces, which cover both Xbox and PlayStation pads with mainline kernel drivers.
+* The service runs on Beckhoff RT Linux as a systemd service. The linux directory holds the build and install steps: clone the repository, publish, copy the directory over, and run the install script. Upgrades keep an edited configuration, and the ADS wire contract is unchanged, so the PLC library and the TcCOM module work exactly as on Windows.
+* Linux is DualSense only. The service reads the pad over the hidraw interface with the same report decoding as on Windows. Xbox controllers need a kernel driver that the Beckhoff kernel does not include, so they are not supported on Linux.
+* The install runs the service under its own system account with device access granted through a udev rule, and registration with the TwinCAT router through membership in its access group.
 
 ## TwinCAT/BSD
 
-Support for TwinCAT/BSD was considered and set aside. Windows comes first and the Linux runtime is the stretch goal. The wire format is documented well enough that a native service could be built for TwinCAT/BSD on the open source ADS library Beckhoff publishes, if demand appears.
+Support for TwinCAT/BSD was considered and set aside; Windows and Beckhoff RT Linux are the supported platforms. The wire format is documented well enough that a native service could be built for TwinCAT/BSD on the open source ADS library Beckhoff publishes, if demand appears.
