@@ -10,6 +10,7 @@ The wire format between the service and its consumers is treated as frozen. Addi
 | 2.1.0 | 1.1 | Service info block and version handshake; install location moved to the product directory |
 | 2.2.0 | 1.2 | PlayStation DualSense backend on Windows; Create and Options on the reserved button bits |
 | 2.3.0 | 1.2 | Beckhoff RT Linux support |
+| 2.4.0 | 1.2 | Rewritten documentation site; the service itself is unchanged |
 
 Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. TcCOM module versions are independent; the module reads the same contract. Any 2.x service serves any consumer, since the controller block never changed shape.
 

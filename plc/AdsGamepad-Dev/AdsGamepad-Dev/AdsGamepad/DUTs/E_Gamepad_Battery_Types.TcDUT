@@ -11,7 +11,7 @@ TYPE E_Gamepad_Battery_Types :
 	Wired := 1,
 	// Battery is alkaline
 	Alkaline := 2,
-	// Battery is nickel-metal hydride
+	// Battery is NiMH
 	NIMH := 3,
 	// Battery is unknown
 	Unknown := 4

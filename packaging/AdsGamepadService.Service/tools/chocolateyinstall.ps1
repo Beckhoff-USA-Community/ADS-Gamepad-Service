@@ -74,7 +74,7 @@ if (-not $existing) {
         -BinaryPathName $quotedExe `
         -DisplayName 'ADS Gamepad Service' `
         -StartupType Automatic `
-        -Description 'Bridges Xbox gamepads to TwinCAT PLCs over ADS.' | Out-Null
+        -Description 'Bridges Xbox and PlayStation gamepads to TwinCAT PLCs over ADS.' | Out-Null
 }
 
 # Delayed start keeps the service from racing the TwinCAT router at boot

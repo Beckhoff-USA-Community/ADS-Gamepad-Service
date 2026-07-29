@@ -11,7 +11,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$SourceDir,
 
-    [string]$InstallDir = 'C:\Program Files\ADS Gamepad Service'
+    [string]$InstallDir = 'C:\Program Files\Beckhoff USA Community\ADS Gamepad\Service'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -72,7 +72,7 @@ if (-not $existing) {
         -BinaryPathName $quotedExe `
         -DisplayName 'ADS Gamepad Service' `
         -StartupType Automatic `
-        -Description 'Bridges Xbox gamepads to TwinCAT PLCs over ADS.' | Out-Null
+        -Description 'Bridges Xbox and PlayStation gamepads to TwinCAT PLCs over ADS.' | Out-Null
 
     $imagePath = (Get-ItemProperty $registryKey).ImagePath
     if ($imagePath -ne $quotedExe) {

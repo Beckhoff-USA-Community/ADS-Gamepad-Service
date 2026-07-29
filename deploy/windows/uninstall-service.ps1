@@ -6,7 +6,7 @@
 param(
     [switch]$RemoveFiles,
 
-    [string]$InstallDir = 'C:\Program Files\ADS Gamepad Service'
+    [string]$InstallDir = 'C:\Program Files\Beckhoff USA Community\ADS Gamepad\Service'
 )
 
 $ErrorActionPreference = 'Stop'

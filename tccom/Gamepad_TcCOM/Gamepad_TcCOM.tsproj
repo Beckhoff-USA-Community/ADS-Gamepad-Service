@@ -202,7 +202,7 @@
 			</Tasks>
 			<Modules>
 				<Module Id="#x01010010" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
-					<Name>Gamepad 1</Name>
+					<Name>XBOX Elite Controller</Name>
 					<ImageId>1000</ImageId>
 					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
 						<Name>Gamepad</Name>
@@ -528,6 +528,728 @@
 							<Value>
 								<Name>ControllerNumber</Name>
 								<Value>1</Value>
+							</Value>
+							<Value>
+								<Name>ServiceAmsNetId</Name>
+								<Data>7f0000010101</Data>
+							</Value>
+							<Value>
+								<Name>TimeoutCycles</Name>
+								<Value>1000</Value>
+							</Value>
+							<Value>
+								<Name>StickDeadzonePercent</Name>
+								<Value>10</Value>
+							</Value>
+							<Value>
+								<Name>StickCurve</Name>
+								<Value>1</Value>
+							</Value>
+							<Value>
+								<Name>TriggerDeadzonePercent</Name>
+								<Value>0</Value>
+							</Value>
+							<Value>
+								<Name>TriggerCurve</Name>
+								<Value>1</Value>
+							</Value>
+						</ParameterValues>
+						<InterfacePointerValues>
+							<Value>
+								<Name>CyclicCaller</Name>
+								<OTCID>#x02010020</OTCID>
+							</Value>
+						</InterfacePointerValues>
+					</TmcDesc>
+				</Module>
+				<Module Id="#x01010020" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
+					<Name>XBOX Adaptive Joystick</Name>
+					<ImageId>1000</ImageId>
+					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
+						<Name>Gamepad</Name>
+						<CLSID ClassFactory="ADS_Gamepad">{4A519DAE-BC7D-F0F3-A4CB-3F944E0A3C28}</CLSID>
+						<Info>
+							<ImageData>424d360c00000000000036000000280000002000000020000000010018000000000000000000c40e0000c40e00000000000000000000ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696282828282828282828282828282828282828282828282828282828282828282828282828969696969696969696969696969696969696282828282828ff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696282828282828282828282828282828282828282828282828282828282828282828282828969696969696969696969696969696969696282828282828ff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696282828282828ff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696282828282828ff00ffff00ff2828282828289696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696969696969696963c3c3c3c3c3c9696969696969696969696969696969696969696969696964baf3c4baf3c9696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696969696969696963c3c3c3c3c3c9696969696969696969696969696969696969696969696964baf3c4baf3c9696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696963c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c969696969696969696969696e16432e164329696969696963232dc3232dc9696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696963c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c969696969696969696969696e16432e164329696969696963232dc3232dc969696969696969696969696282828282828ff00ffff00ff2828282828289696969696969696969696969696969696969696969696963c3c3c3c3c3c96969696969696969696969696969696969696969696969632c3eb32c3eb969696969696969696969696282828282828ff00ffff00ffff00ffff00ff2828282828289696969696969696969696969696969696969696969696963c3c3c3c3c3c96969696969696969696969696969696969696969696969632c3eb32c3eb969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff</ImageData>
+						</Info>
+						<Licenses>
+							<License>
+								<LicenseId>{304D006A-8299-4560-AB79-438534B50288}</LicenseId>
+							</License>
+						</Licenses>
+						<InitSequence>PSO</InitSequence>
+						<Contexts>
+							<Context>
+								<Id>1</Id>
+								<ManualConfig>
+									<OTCID>#x02010020</OTCID>
+								</ManualConfig>
+								<Priority>1</Priority>
+								<CycleTime>10000000</CycleTime>
+							</Context>
+						</Contexts>
+						<Interfaces>
+							<Interface DisableCodeGeneration="true">
+								<Type GUID="{00000012-0000-0000-E000-000000000064}">ITComObject</Type>
+							</Interface>
+							<Interface>
+								<Type GUID="{03000010-0000-0000-E000-000000000064}">ITcCyclic</Type>
+							</Interface>
+							<Interface DisableCodeGeneration="true">
+								<Type GUID="{03000012-0000-0000-E000-000000000064}">ITcADI</Type>
+							</Interface>
+							<Interface DisableCodeGeneration="true">
+								<Type GUID="{03000018-0000-0000-E000-000000000064}">ITcWatchSource</Type>
+							</Interface>
+						</Interfaces>
+						<Parameters>
+							<Parameter>
+								<Name>TraceLevelMax</Name>
+								<Comment><![CDATA[Controls the amount of log messages.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{8007AE3B-86BB-40F2-B385-EF87FCC239A4}">TcTraceLevel</BaseType>
+								<PTCID>#x03002103</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>ControllerNumber</Name>
+								<Comment><![CDATA[Controller slot on the gamepad service, 1 to 4. Use one module instance per controller.]]></Comment>
+								<BitSize>16</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-000000000005}">UINT</BaseType>
+								<Default>
+									<Value>1</Value>
+								</Default>
+								<PTCID>#x00000003</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>ServiceAmsNetId</Name>
+								<Comment><![CDATA[AMS Net ID of the machine that runs the gamepad service. All zeros and 127.0.0.1.1.1 both mean the local system, the module then finds the real local address by itself.]]></Comment>
+								<BitSize>48</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-000000000041}">AMSNETID</BaseType>
+								<Default>
+									<Data>7F0000010101</Data>
+								</Default>
+								<PTCID>#x00000004</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>TimeoutCycles</Name>
+								<Comment><![CDATA[Task cycles without an ADS answer before the gamepad outputs are zeroed and the read is retried.]]></Comment>
+								<BitSize>16</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-000000000005}">UINT</BaseType>
+								<Default>
+									<Value>1000</Value>
+								</Default>
+								<PTCID>#x00000005</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>StickDeadzonePercent</Name>
+								<Comment TxtId=""><![CDATA[Stick deadzone in percent of full deflection, applied range 0 to 90. Deflection below the deadzone reads as zero, deflection above it rises smoothly from zero.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<Default>
+									<Value>10.0</Value>
+								</Default>
+								<PTCID>#x00000006</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>StickCurve</Name>
+								<Comment TxtId=""><![CDATA[Exponent on the stick deflection after the deadzone, applied range 0.25 to 8. A value of 1.0 is linear, 2.0 gives fine control near the center for jogging.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<Default>
+									<Value>1.0</Value>
+								</Default>
+								<PTCID>#x00000007</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>TriggerDeadzonePercent</Name>
+								<Comment TxtId=""><![CDATA[Trigger deadzone in percent of full travel, applied range 0 to 90. Travel below the deadzone reads as zero, travel above it rises smoothly from zero.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<Default>
+									<Value>0.0</Value>
+								</Default>
+								<PTCID>#x00000008</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>TriggerCurve</Name>
+								<Comment TxtId=""><![CDATA[Exponent on the trigger travel after the deadzone, applied range 0.25 to 8. A value of 1.0 is linear, higher values give fine control at light pressure.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<Default>
+									<Value>1.0</Value>
+								</Default>
+								<PTCID>#x00000009</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter OnlineParameter="true">
+								<Name>OnlineStickDeadzonePercent</Name>
+								<Comment TxtId=""><![CDATA[Live copy of StickDeadzonePercent, seeded from the init value when the module starts. Adjust it here while the machine runs, then copy the final value into StickDeadzonePercent to make it permanent.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<PTCID>#x0000000a</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter OnlineParameter="true">
+								<Name>OnlineStickCurve</Name>
+								<Comment TxtId=""><![CDATA[Live copy of StickCurve, seeded from the init value when the module starts.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<PTCID>#x0000000b</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter OnlineParameter="true">
+								<Name>OnlineTriggerDeadzonePercent</Name>
+								<Comment TxtId=""><![CDATA[Live copy of TriggerDeadzonePercent, seeded from the init value when the module starts.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<PTCID>#x0000000c</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter OnlineParameter="true">
+								<Name>OnlineTriggerCurve</Name>
+								<Comment TxtId=""><![CDATA[Live copy of TriggerCurve, seeded from the init value when the module starts.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<PTCID>#x0000000d</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+						</Parameters>
+						<DataAreas>
+							<DataArea>
+								<AreaNo AreaType="InputDst" CreateSymbols="true">0</AreaNo>
+								<Name>Inputs</Name>
+								<ContextId>1</ContextId>
+								<ByteSize>12</ByteSize>
+								<Symbol>
+									<Name>fRumbleLeft</Name>
+									<Comment><![CDATA[Left rumble motor strength, 0 to 100 percent.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>0</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fRumbleRight</Name>
+									<Comment><![CDATA[Right rumble motor strength, 0 to 100 percent.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>32</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>bRumbleEnable</Name>
+									<Comment><![CDATA[When TRUE changed rumble values are written to the service.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+									<BitOffs>64</BitOffs>
+								</Symbol>
+							</DataArea>
+							<DataArea>
+								<AreaNo AreaType="OutputSrc" CreateSymbols="true">1</AreaNo>
+								<Name>Outputs</Name>
+								<ContextId>1</ContextId>
+								<ByteSize>76</ByteSize>
+								<Symbol>
+									<Name>bConnected</Name>
+									<Comment><![CDATA[TRUE while the gamepad is connected to the service.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+									<BitOffs>0</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nReserved1</Name>
+									<Comment><![CDATA[Reserved, keeps the following members aligned.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+									<BitOffs>8</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nReserved2</Name>
+									<Comment><![CDATA[Reserved, keeps the following members aligned.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+									<BitOffs>16</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nReserved3</Name>
+									<Comment><![CDATA[Reserved, keeps the following members aligned.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+									<BitOffs>24</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>stButtons</Name>
+									<Comment><![CDATA[Decoded button states, each TRUE while the button is pressed.]]></Comment>
+									<BitSize>128</BitSize>
+									<BaseType GUID="{0D2B4778-3608-4C16-9CA3-653934376D92}">ST_GamepadButtons</BaseType>
+									<BitOffs>32</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fLeftStickX</Name>
+									<Comment><![CDATA[Left stick X axis with deadzone and curve applied, range -100 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>160</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fLeftStickY</Name>
+									<Comment><![CDATA[Left stick Y axis with deadzone and curve applied, range -100 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>192</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fRightStickX</Name>
+									<Comment><![CDATA[Right stick X axis with deadzone and curve applied, range -100 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>224</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fRightStickY</Name>
+									<Comment><![CDATA[Right stick Y axis with deadzone and curve applied, range -100 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>256</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fLeftTrigger</Name>
+									<Comment><![CDATA[Left trigger with deadzone and curve applied, range 0 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>288</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fRightTrigger</Name>
+									<Comment><![CDATA[Right trigger with deadzone and curve applied, range 0 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>320</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nButtonsRaw</Name>
+									<Comment><![CDATA[Button word exactly as served on the wire.]]></Comment>
+									<BitSize>16</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000006}">INT</BaseType>
+									<BitOffs>352</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nStatesRaw</Name>
+									<Comment><![CDATA[State word exactly as served on the wire. Bit 0 connected, bits 1 to 5 battery type, bits 6 to 9 battery level.]]></Comment>
+									<BitSize>16</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000006}">INT</BaseType>
+									<BitOffs>368</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>eCommState</Name>
+									<Comment><![CDATA[0 Init, 1 Ok, 2 Timeout, 3 AdsError, 4 NoTask.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
+									<BitOffs>384</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nErrorCount</Name>
+									<Comment><![CDATA[Counts timeouts and ADS errors since start.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
+									<BitOffs>416</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nDataAgeCycles</Name>
+									<Comment><![CDATA[Task cycles since the last successful gamepad read.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
+									<BitOffs>448</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>stServiceInfo</Name>
+									<Comment><![CDATA[Service info block, all zero when the service does not serve it.]]></Comment>
+									<BitSize>128</BitSize>
+									<BaseType GUID="{9FA0A70F-30BB-4A3D-96DB-C01BF224E72B}">ST_GamepadServiceInfo</BaseType>
+									<BitOffs>480</BitOffs>
+								</Symbol>
+							</DataArea>
+						</DataAreas>
+						<InterfacePointers>
+							<InterfacePointer>
+								<PTCID>#x03002060</PTCID>
+								<Name>CyclicCaller</Name>
+								<Type GUID="{0300001E-0000-0000-E000-000000000064}">ITcCyclicCaller</Type>
+							</InterfacePointer>
+						</InterfacePointers>
+						<ParameterValues>
+							<Value>
+								<Name>TraceLevelMax</Name>
+								<EnumText>tlAlways</EnumText>
+							</Value>
+							<Value>
+								<Name>ControllerNumber</Name>
+								<Value>2</Value>
+							</Value>
+							<Value>
+								<Name>ServiceAmsNetId</Name>
+								<Data>7f0000010101</Data>
+							</Value>
+							<Value>
+								<Name>TimeoutCycles</Name>
+								<Value>1000</Value>
+							</Value>
+							<Value>
+								<Name>StickDeadzonePercent</Name>
+								<Value>10</Value>
+							</Value>
+							<Value>
+								<Name>StickCurve</Name>
+								<Value>1</Value>
+							</Value>
+							<Value>
+								<Name>TriggerDeadzonePercent</Name>
+								<Value>0</Value>
+							</Value>
+							<Value>
+								<Name>TriggerCurve</Name>
+								<Value>1</Value>
+							</Value>
+						</ParameterValues>
+						<InterfacePointerValues>
+							<Value>
+								<Name>CyclicCaller</Name>
+								<OTCID>#x02010020</OTCID>
+							</Value>
+						</InterfacePointerValues>
+					</TmcDesc>
+				</Module>
+				<Module Id="#x01010030" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
+					<Name>PS5 Dual Sense</Name>
+					<ImageId>1000</ImageId>
+					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.7">
+						<Name>Gamepad</Name>
+						<CLSID ClassFactory="ADS_Gamepad">{4A519DAE-BC7D-F0F3-A4CB-3F944E0A3C28}</CLSID>
+						<Info>
+							<ImageData>424d360c00000000000036000000280000002000000020000000010018000000000000000000c40e0000c40e00000000000000000000ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696282828282828282828282828282828282828282828282828282828282828282828282828969696969696969696969696969696969696282828282828ff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696282828282828282828282828282828282828282828282828282828282828282828282828969696969696969696969696969696969696282828282828ff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696282828282828ff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696282828282828ff00ffff00ff2828282828289696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696969696969696963c3c3c3c3c3c9696969696969696969696969696969696969696969696964baf3c4baf3c9696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696969696969696963c3c3c3c3c3c9696969696969696969696969696969696969696969696964baf3c4baf3c9696969696969696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696963c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c969696969696969696969696e16432e164329696969696963232dc3232dc9696969696969696969696962828282828282828282828289696969696969696969696969696969696969696969696963c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c969696969696969696969696e16432e164329696969696963232dc3232dc969696969696969696969696282828282828ff00ffff00ff2828282828289696969696969696969696969696969696969696969696963c3c3c3c3c3c96969696969696969696969696969696969696969696969632c3eb32c3eb969696969696969696969696282828282828ff00ffff00ffff00ffff00ff2828282828289696969696969696969696969696969696969696969696963c3c3c3c3c3c96969696969696969696969696969696969696969696969632c3eb32c3eb969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696969696282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828282828ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff</ImageData>
+						</Info>
+						<Licenses>
+							<License>
+								<LicenseId>{304D006A-8299-4560-AB79-438534B50288}</LicenseId>
+							</License>
+						</Licenses>
+						<InitSequence>PSO</InitSequence>
+						<Contexts>
+							<Context>
+								<Id>1</Id>
+								<ManualConfig>
+									<OTCID>#x02010020</OTCID>
+								</ManualConfig>
+								<Priority>1</Priority>
+								<CycleTime>10000000</CycleTime>
+							</Context>
+						</Contexts>
+						<Interfaces>
+							<Interface DisableCodeGeneration="true">
+								<Type GUID="{00000012-0000-0000-E000-000000000064}">ITComObject</Type>
+							</Interface>
+							<Interface>
+								<Type GUID="{03000010-0000-0000-E000-000000000064}">ITcCyclic</Type>
+							</Interface>
+							<Interface DisableCodeGeneration="true">
+								<Type GUID="{03000012-0000-0000-E000-000000000064}">ITcADI</Type>
+							</Interface>
+							<Interface DisableCodeGeneration="true">
+								<Type GUID="{03000018-0000-0000-E000-000000000064}">ITcWatchSource</Type>
+							</Interface>
+						</Interfaces>
+						<Parameters>
+							<Parameter>
+								<Name>TraceLevelMax</Name>
+								<Comment><![CDATA[Controls the amount of log messages.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{8007AE3B-86BB-40F2-B385-EF87FCC239A4}">TcTraceLevel</BaseType>
+								<PTCID>#x03002103</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>ControllerNumber</Name>
+								<Comment><![CDATA[Controller slot on the gamepad service, 1 to 4. Use one module instance per controller.]]></Comment>
+								<BitSize>16</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-000000000005}">UINT</BaseType>
+								<Default>
+									<Value>1</Value>
+								</Default>
+								<PTCID>#x00000003</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>ServiceAmsNetId</Name>
+								<Comment><![CDATA[AMS Net ID of the machine that runs the gamepad service. All zeros and 127.0.0.1.1.1 both mean the local system, the module then finds the real local address by itself.]]></Comment>
+								<BitSize>48</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-000000000041}">AMSNETID</BaseType>
+								<Default>
+									<Data>7F0000010101</Data>
+								</Default>
+								<PTCID>#x00000004</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>TimeoutCycles</Name>
+								<Comment><![CDATA[Task cycles without an ADS answer before the gamepad outputs are zeroed and the read is retried.]]></Comment>
+								<BitSize>16</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-000000000005}">UINT</BaseType>
+								<Default>
+									<Value>1000</Value>
+								</Default>
+								<PTCID>#x00000005</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>StickDeadzonePercent</Name>
+								<Comment TxtId=""><![CDATA[Stick deadzone in percent of full deflection, applied range 0 to 90. Deflection below the deadzone reads as zero, deflection above it rises smoothly from zero.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<Default>
+									<Value>10.0</Value>
+								</Default>
+								<PTCID>#x00000006</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>StickCurve</Name>
+								<Comment TxtId=""><![CDATA[Exponent on the stick deflection after the deadzone, applied range 0.25 to 8. A value of 1.0 is linear, 2.0 gives fine control near the center for jogging.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<Default>
+									<Value>1.0</Value>
+								</Default>
+								<PTCID>#x00000007</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>TriggerDeadzonePercent</Name>
+								<Comment TxtId=""><![CDATA[Trigger deadzone in percent of full travel, applied range 0 to 90. Travel below the deadzone reads as zero, travel above it rises smoothly from zero.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<Default>
+									<Value>0.0</Value>
+								</Default>
+								<PTCID>#x00000008</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter>
+								<Name>TriggerCurve</Name>
+								<Comment TxtId=""><![CDATA[Exponent on the trigger travel after the deadzone, applied range 0.25 to 8. A value of 1.0 is linear, higher values give fine control at light pressure.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<Default>
+									<Value>1.0</Value>
+								</Default>
+								<PTCID>#x00000009</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter OnlineParameter="true">
+								<Name>OnlineStickDeadzonePercent</Name>
+								<Comment TxtId=""><![CDATA[Live copy of StickDeadzonePercent, seeded from the init value when the module starts. Adjust it here while the machine runs, then copy the final value into StickDeadzonePercent to make it permanent.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<PTCID>#x0000000a</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter OnlineParameter="true">
+								<Name>OnlineStickCurve</Name>
+								<Comment TxtId=""><![CDATA[Live copy of StickCurve, seeded from the init value when the module starts.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<PTCID>#x0000000b</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter OnlineParameter="true">
+								<Name>OnlineTriggerDeadzonePercent</Name>
+								<Comment TxtId=""><![CDATA[Live copy of TriggerDeadzonePercent, seeded from the init value when the module starts.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<PTCID>#x0000000c</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+							<Parameter OnlineParameter="true">
+								<Name>OnlineTriggerCurve</Name>
+								<Comment TxtId=""><![CDATA[Live copy of TriggerCurve, seeded from the init value when the module starts.]]></Comment>
+								<BitSize>32</BitSize>
+								<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+								<PTCID>#x0000000d</PTCID>
+								<ContextId>1</ContextId>
+							</Parameter>
+						</Parameters>
+						<DataAreas>
+							<DataArea>
+								<AreaNo AreaType="InputDst" CreateSymbols="true">0</AreaNo>
+								<Name>Inputs</Name>
+								<ContextId>1</ContextId>
+								<ByteSize>12</ByteSize>
+								<Symbol>
+									<Name>fRumbleLeft</Name>
+									<Comment><![CDATA[Left rumble motor strength, 0 to 100 percent.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>0</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fRumbleRight</Name>
+									<Comment><![CDATA[Right rumble motor strength, 0 to 100 percent.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>32</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>bRumbleEnable</Name>
+									<Comment><![CDATA[When TRUE changed rumble values are written to the service.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+									<BitOffs>64</BitOffs>
+								</Symbol>
+							</DataArea>
+							<DataArea>
+								<AreaNo AreaType="OutputSrc" CreateSymbols="true">1</AreaNo>
+								<Name>Outputs</Name>
+								<ContextId>1</ContextId>
+								<ByteSize>76</ByteSize>
+								<Symbol>
+									<Name>bConnected</Name>
+									<Comment><![CDATA[TRUE while the gamepad is connected to the service.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+									<BitOffs>0</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nReserved1</Name>
+									<Comment><![CDATA[Reserved, keeps the following members aligned.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+									<BitOffs>8</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nReserved2</Name>
+									<Comment><![CDATA[Reserved, keeps the following members aligned.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+									<BitOffs>16</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nReserved3</Name>
+									<Comment><![CDATA[Reserved, keeps the following members aligned.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+									<BitOffs>24</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>stButtons</Name>
+									<Comment><![CDATA[Decoded button states, each TRUE while the button is pressed.]]></Comment>
+									<BitSize>128</BitSize>
+									<BaseType GUID="{0D2B4778-3608-4C16-9CA3-653934376D92}">ST_GamepadButtons</BaseType>
+									<BitOffs>32</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fLeftStickX</Name>
+									<Comment><![CDATA[Left stick X axis with deadzone and curve applied, range -100 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>160</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fLeftStickY</Name>
+									<Comment><![CDATA[Left stick Y axis with deadzone and curve applied, range -100 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>192</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fRightStickX</Name>
+									<Comment><![CDATA[Right stick X axis with deadzone and curve applied, range -100 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>224</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fRightStickY</Name>
+									<Comment><![CDATA[Right stick Y axis with deadzone and curve applied, range -100 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>256</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fLeftTrigger</Name>
+									<Comment><![CDATA[Left trigger with deadzone and curve applied, range 0 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>288</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>fRightTrigger</Name>
+									<Comment><![CDATA[Right trigger with deadzone and curve applied, range 0 to 100.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-00000000000D}">REAL</BaseType>
+									<BitOffs>320</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nButtonsRaw</Name>
+									<Comment><![CDATA[Button word exactly as served on the wire.]]></Comment>
+									<BitSize>16</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000006}">INT</BaseType>
+									<BitOffs>352</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nStatesRaw</Name>
+									<Comment><![CDATA[State word exactly as served on the wire. Bit 0 connected, bits 1 to 5 battery type, bits 6 to 9 battery level.]]></Comment>
+									<BitSize>16</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000006}">INT</BaseType>
+									<BitOffs>368</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>eCommState</Name>
+									<Comment><![CDATA[0 Init, 1 Ok, 2 Timeout, 3 AdsError, 4 NoTask.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
+									<BitOffs>384</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nErrorCount</Name>
+									<Comment><![CDATA[Counts timeouts and ADS errors since start.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
+									<BitOffs>416</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nDataAgeCycles</Name>
+									<Comment><![CDATA[Task cycles since the last successful gamepad read.]]></Comment>
+									<BitSize>32</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
+									<BitOffs>448</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>stServiceInfo</Name>
+									<Comment><![CDATA[Service info block, all zero when the service does not serve it.]]></Comment>
+									<BitSize>128</BitSize>
+									<BaseType GUID="{9FA0A70F-30BB-4A3D-96DB-C01BF224E72B}">ST_GamepadServiceInfo</BaseType>
+									<BitOffs>480</BitOffs>
+								</Symbol>
+							</DataArea>
+						</DataAreas>
+						<InterfacePointers>
+							<InterfacePointer>
+								<PTCID>#x03002060</PTCID>
+								<Name>CyclicCaller</Name>
+								<Type GUID="{0300001E-0000-0000-E000-000000000064}">ITcCyclicCaller</Type>
+							</InterfacePointer>
+						</InterfacePointers>
+						<ParameterValues>
+							<Value>
+								<Name>TraceLevelMax</Name>
+								<EnumText>tlAlways</EnumText>
+							</Value>
+							<Value>
+								<Name>ControllerNumber</Name>
+								<Value>3</Value>
 							</Value>
 							<Value>
 								<Name>ServiceAmsNetId</Name>

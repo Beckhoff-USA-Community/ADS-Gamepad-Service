@@ -28,6 +28,21 @@ Example with an Xbox controller on slot one and a DualSense on slot two:
 
 Prefer a high slot for the DualSense: every XInput slot is tied to the Xbox controller with the same number, so a DualSense on slot one would leave the first Xbox controller unread.
 
+## Reaching the service from another machine
+
+The service answers requests through the TwinCAT router of the machine it runs on. When the PLC or the TcCOM module runs on that same machine, the defaults already point at it: an empty NetID on the function block, the default ServiceAmsNetId on the module. Nothing to set up.
+
+When the consumer runs on a different machine, two things are needed:
+
+* An ADS route between the two machines. A route is a trust entry that two TwinCAT routers store about each other; without it the routers refuse to talk. Add it the same way you would to reach any remote PLC, for example through the route dialog in the engineering environment or from the TwinCAT icon on the target.
+* The AMS Net ID of the service machine on the consuming side: pass it as the NetID argument of the function block, or set it in the ServiceAmsNetId parameter of the TcCOM module. The Net ID is shown in the same dialogs where the route is added.
+
+The service itself needs no route configuration. It never opens connections on its own, so only the consuming side and its router need to know the way.
+
+## Xbox notes
+
+After a machine reboot a wired Xbox controller may not report as connected right away. An Elite controller sleeps until its Xbox button is pressed, and the Xbox Adaptive Joystick starts in a generic input mode that XInput does not see until it is unplugged and plugged back in. Both behaviors live in the controller, not in the service; once the pad reports, data flows normally.
+
 ## PlayStation notes
 
 The DualSense connects over USB; Bluetooth is not supported. A pad that is still paired with a phone, laptop or PlayStation sends its buttons to that device even while the cable is plugged in, which from this side looks like a connected pad that never reacts. The service detects that state and logs a warning. Unpair the controller from every other device before use.

@@ -7,11 +7,11 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 * The Windows application lives in src/AdsGamepadService and targets .NET 10, the current long term support release, with the Beckhoff ADS packages on the 7.0 line.
 * The application registers itself as an ADS server on port 25733. The PLC polls that server every cycle to read controller data and to write rumble commands. This wire format is treated as frozen. Any change to it will be versioned so that existing PLC programs keep working or fail loudly, never silently.
 * Xbox controllers are read directly from C# through the Microsoft XInput API. The old C++ helper library is gone, so the project needs only the .NET SDK to build.
-* A second input backend reads a wired PlayStation 5 DualSense controller over raw HID, selected per slot in the configuration file. Hardware verification of that backend is part of Phase 6.
+* A second input backend reads a wired PlayStation 5 DualSense controller over raw HID, selected per slot in the configuration file. That backend has been verified with a real controller on Beckhoff hardware, on Windows and on Linux.
 * A test suite under tests locks the exact numeric behavior of the controller math, including the deadzone handling and axis mapping the old helper shipped with, so a future change cannot silently alter what the PLC receives.
 * The PLC library sources are under plc. The library is called AdsGamepad since version 2.0.0 and covers plain controller I/O: buttons, sticks, triggers, battery state and rumble. The helper blocks of the old library are gone, and MIGRATION.md at the repository root explains the move from XboxControllerUtilities, whose final release stays available under the old name.
 * A TwinCAT C++ module under tccom exposes a controller as plain process data. You add an instance, assign a task and link the variables, with no PLC code involved. It is distributed as source because TwinCAT only loads C++ modules that are signed with a certificate the target trusts, so users build and sign it themselves. The README under tccom covers the build.
-* The content under Documentation is the old documentation site. It still refers to the old project names and will be rewritten as the phases below land. Until then, treat it as historical reference.
+* The content under Documentation is the source of the documentation site: an mkdocs project covering installation on Windows and Linux, service configuration, the PLC library, the TcCOM module, migration from the old project, and the version and wire contract reference. The engineering workload installs the same pages as offline documentation.
 
 ## Phase 1: Move to current .NET (complete)
 
@@ -31,9 +31,11 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 * A GitHub Actions workflow builds and tests the project on every push to the main branch and on every pull request, and packs both packages. Pushing a version tag publishes them to the GitHub package feed after checking that the tag, the project file, and both package manifests agree on the version number.
 * The GitHub package feed works as a TwinCAT Package Manager source with a personal access token, and installs from it were verified on a real controller. Two limitations are inherent to GitHub: its feed requires a login even for public packages, and its search endpoint accepts at most 100 results per page while the package manager requests 500 by default. The README documents the working setup, which adds the feed with a token and a page size of 100. With those settings, listing, workload grouping, and installs all work, though GitHub reports package ids in place of display titles so listings look plain.
 
-## Phase 4: Deploy to a test controller
+## Phase 4: Deploy to a test controller (complete)
 
-* Install the workloads on a real Beckhoff controller over SSH and verify service startup, ADS traffic, and recovery behavior after reboots and cable pulls.
+* The runtime workload was installed on a real Beckhoff controller straight from the GitHub package feed, upgrading the running service in place while keeping its configuration.
+* Recovery behavior was verified on hardware. The service restarts on its own through the Windows service recovery settings, comes back about two minutes after a reboot thanks to the delayed start, and the PLC library and the TcCOM module hold their fail safe zero state while it is away and reconnect without intervention.
+* Disconnect and reconnect were exercised with all three supported controllers, including rumble and the PlayStation specific buttons. A wired PlayStation controller reconnects on its own after a cable pull. Wired Xbox controllers may need a nudge after a machine reboot; the service page of the documentation describes it.
 
 ## Phase 5: PLC library cleanup (complete)
 
@@ -42,7 +44,7 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 * The version handshake landed on both sides. The library reads an info block from the service once at startup and reports a clear state for a mismatched pair instead of misreading data. The service side of the handshake ships with release 2.1.0.
 * The phase also produced the TwinCAT C++ module under tccom, which reads the same wire format from a task cycle without any PLC involvement.
 
-## Phase 5.5: Installation through the TwinCAT Package Manager
+## Phase 5.5: Installation through the TwinCAT Package Manager (complete)
 
 * The project output is regrouped into two workloads. The engineering workload installs the documentation, the TcCOM module source and the PLC library, and puts the library into the XAE library repository so it is ready to reference after the install. The runtime workload installs the Windows service. Both show up as one card with an engineering and a runtime row in the package manager.
 * All components install under one product directory below C:\Program Files\Beckhoff USA Community, the way normal applications do. Upgrades keep an edited configuration, even when they move an installation from the old default location.
