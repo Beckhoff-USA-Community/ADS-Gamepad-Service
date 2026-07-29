@@ -1,6 +1,6 @@
 # ADS Gamepad Service
 
-ADS Gamepad Service connects Xbox and PlayStation gamepads attached to PCs, IPCs, and CX devices, then hosts the input data over ADS for the PLC to access. It runs as a system service on TwinCAT Windows systems and includes a PLC library for reading gamepad data in your project.
+ADS Gamepad Service connects Xbox and PlayStation gamepads attached to PCs, IPCs, and CX devices, then hosts the input data over ADS for the PLC to access. It runs as a system service on TwinCAT Windows systems and on Beckhoff RT Linux, and includes a PLC library for reading gamepad data in your project. The full documentation lives under Documentation in this repository; for Linux setup see the linux directory.
 
 ### Installing with the TwinCAT Package Manager
 

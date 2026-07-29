@@ -298,6 +298,9 @@ _Repository/
 # Linux publish staging, created by the build step in linux/README.md
 linux/publish/
 
+# Local mkdocs build output
+Documentation/site/
+
 # Compiled libraries are ignored above, but the library package ships one
 # committed export. Whatever is saved here is what the package installs.
 !packaging/AdsGamepad.PlcLibrary/library/AdsGamepad.library

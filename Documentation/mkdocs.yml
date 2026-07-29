@@ -1,107 +1,26 @@
-site_name: TwinCAT Xbox Controller Service Documentation
+site_name: ADS Gamepad Service
+site_description: Gamepads as PLC process data over ADS, on TwinCAT Windows and Beckhoff RT Linux systems
+repo_url: https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service
 
 theme:
-    name: material
-    logo: Images/Controller.svg
-    custom_dir: docs/overrides
-    font:
-        text: Arial
-    features:
-        - navigation.tabs
-    # 404 page
-    static_templates:
-        - 404.html
-
-
-# Configuration
-theme:
-    name: material
-    custom_dir: docs/overrides  
-    # Static files
-    static_templates:
-        - 404.html    
-    # Don't include MkDocs' JavaScript
-    include_search_page: false
-    search_index_only: true 
-    # Default values, taken from mkdocs_theme.yml
-    language: en
-    features:
-        # - announce.dismiss
-        - content.code.annotate
-        # - content.tabs.link
-        - content.tooltips
-        # - header.autohide
-        # - navigation.expand
-        - navigation.indexes
-        # - navigation.instant
-        # - navigation.prune
-        # - navigation.sections
-        - navigation.tabs
-        # - navigation.tabs.sticky
-        - navigation.top
-        - navigation.tracking
-        - search.highlight
-        - search.share
-        - search.suggest
-        - toc.follow
-        # - toc.integrate
-    palette:
-
-        # Palette toggle for automatic mode
-        - media: "(prefers-color-scheme)"
-          toggle:
-            icon: material/brightness-auto
-            name: Switch to dark mode
-
-        # Palette toggle for light mode
-        - media: "(prefers-color-scheme: light)"
-          scheme: light-mode 
-          toggle:
-            icon: material/brightness-7
-            name: Switch to system preference
-
-        # Palette toggle for dark mode
-        - media: "(prefers-color-scheme: dark)"
-          scheme: slate
-          toggle:
-            icon: material/brightness-4
-            name: Switch to light mode         
-    font:
-        text: Arial
-        code: Roboto Mono 
-    logo: Images/Controller.svg
-
-extra_css:
-    - style.css
-
-use_directory_urls: false
-
-repo_name: TC Xbox Project GitHub
-repo_url: https://github.com/Beckhoff-USA-Community/TwinCAT-Xbox-Controller-Service
-edit_uri: ""
-
-markdown_extensions:
-    - pymdownx.emoji:
-        emoji_index: !!python/name:materialx.emoji.twemoji
-        emoji_generator: !!python/name:materialx.emoji.to_svg
-    - pymdownx.highlight:
-        linenums: true
-    - pymdownx.inlinehilite
-    - pymdownx.superfences
-    - pymdownx.snippets
+  name: material
+  logo: Images/Controller.svg
+  language: en
+  features:
+    - navigation.tabs
+    - content.code.copy
 
 nav:
-    - Home: index.md
-    - Getting Started:
-        - Introduction:             GettingStarted/Introduction.md
-        - System Requirements:      GettingStarted/SystemRequirements.md
-        - Installation:             GettingStarted/Installation.md
-        - First Program:            GettingStarted/FirstProgram.md
-        - PLC Documentation:           PLCDocs/Overview.md
-    - PLC Documentation:
-        - Overview:                 PLCDocs/Overview.md
-        - Primary Function Blocks:
-            - Xbox Controller:      PLCDocs/XboxController.md
-        - Helper Function Blocks:
-            - NC Axis Helpers:      PLCDocs/NCAxisHelper.md
-            - XPlanar Helpers:      PLCDocs/XPlanarHelper.md
+  - Home: index.md
+  - Installation:
+      - Windows: installation/windows.md
+      - Beckhoff RT Linux: installation/linux.md
+  - Service: service.md
+  - PLC Library: plc-library.md
+  - TcCOM Module: tccom.md
+  - Migration: migration.md
+  - Versions and Wire Contract: versions.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences

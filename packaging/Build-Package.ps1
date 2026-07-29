@@ -35,6 +35,12 @@ Copy-Item (Join-Path $repoRoot 'README.md') (Join-Path $docsBin 'README.md')
 Copy-Item (Join-Path $repoRoot 'CONFIGURATION.md') (Join-Path $docsBin 'CONFIGURATION.md')
 Copy-Item (Join-Path $repoRoot 'MIGRATION.md') (Join-Path $docsBin 'MIGRATION.md')
 Copy-Item (Join-Path $repoRoot 'tccom\README.md') (Join-Path $docsBin 'TcComModule.md')
+# The documentation site pages ship as plain markdown under site
+robocopy (Join-Path $repoRoot 'Documentation\docs') (Join-Path $docsBin 'site') *.md /S | Out-Null
+if ($LASTEXITCODE -ge 8) {
+    throw "Staging the documentation site failed, robocopy code $LASTEXITCODE."
+}
+cmd /c exit 0
 
 # The TcCOM source payload is the project tree without build output, user
 # settings and licensing files

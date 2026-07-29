@@ -36,6 +36,9 @@ jobs:
           Copy-Item CONFIGURATION.md packaging/AdsGamepad.Documentation/bin/CONFIGURATION.md
           Copy-Item MIGRATION.md packaging/AdsGamepad.Documentation/bin/MIGRATION.md
           Copy-Item tccom/README.md packaging/AdsGamepad.Documentation/bin/TcComModule.md
+          robocopy Documentation/docs packaging/AdsGamepad.Documentation/bin/site *.md /S | Out-Null
+          if ($LASTEXITCODE -ge 8) { throw "Staging the documentation site failed, robocopy code $LASTEXITCODE." }
+          cmd /c exit 0
           robocopy tccom/Gamepad_TcCOM packaging/AdsGamepad.TcComSource/bin /E /XD _Repository _Boot _products _Deployment .vs /XF *.bak *.user *.tclrs *.suo TcSignLog.txt | Out-Null
           if ($LASTEXITCODE -ge 8) { throw "Staging the TcCOM source failed, robocopy code $LASTEXITCODE." }
           Copy-Item tccom/README.md packaging/AdsGamepad.TcComSource/bin/README.md
