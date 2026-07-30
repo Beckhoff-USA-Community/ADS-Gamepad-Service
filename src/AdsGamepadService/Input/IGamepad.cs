@@ -43,7 +43,11 @@ namespace AdsGamepadService.Input
         short AccelZ,
         GamepadTouchPoint Touch0,
         GamepadTouchPoint Touch1,
-        uint Sequence);
+        uint Sequence,
+        byte BatteryPercent = 0,
+        bool BatteryCharging = false,
+        bool BatteryFull = false,
+        bool BatteryValid = false);
 
     /* Implemented by backends that can supply extended data. A slot whose
        backend lacks this interface answers the extended read with zeroes. */

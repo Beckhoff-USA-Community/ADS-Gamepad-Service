@@ -50,6 +50,8 @@ VAR
 	_stTouchpad : ST_Gamepad_Touchpad;
 	{attribute 'hide'}
 	_stMotion : ST_Gamepad_Motion;
+	{attribute 'hide'}
+	_stExtBattery : ST_Gamepad_Ext_Battery;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -564,6 +566,30 @@ P_Motion REF= THIS^._stMotion;]]></ST>
         </Implementation>
       </Get>
     </Property>
+    <Property Name="P_Ext_Battery" Id="{fd45460a-6ef2-4b70-bf02-865dc28f4dbc}">
+      <Declaration><![CDATA[{attribute 'monitoring':='call'}
+// Battery state from the extended block, valid while bValid is TRUE
+PROPERTY P_Ext_Battery : REFERENCE TO ST_Gamepad_Ext_Battery]]></Declaration>
+      <Get Name="Get" Id="{4de1670b-c387-4d01-98c0-d30c5e8df3b4}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[IF (THIS^.stGamepadExtInputs.nExtFlags AND 16#0002) <> 0 THEN
+	THIS^._stExtBattery.bValid 		:= TRUE;
+	THIS^._stExtBattery.nPercent 	:= THIS^.stGamepadExtInputs.nBatteryPercent;
+	THIS^._stExtBattery.bCharging 	:= (THIS^.stGamepadExtInputs.nBatteryFlags AND 16#01) <> 0;
+	THIS^._stExtBattery.bFull 		:= (THIS^.stGamepadExtInputs.nBatteryFlags AND 16#02) <> 0;
+ELSE
+	THIS^._stExtBattery.bValid 		:= FALSE;
+	THIS^._stExtBattery.nPercent 	:= 0;
+	THIS^._stExtBattery.bCharging 	:= FALSE;
+	THIS^._stExtBattery.bFull 		:= FALSE;
+END_IF
+P_Ext_Battery REF= THIS^._stExtBattery;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <Property Name="P_Sequence" Id="{64d16bed-4a84-41b0-924b-752cc55846a4}">
       <Declaration><![CDATA[{attribute 'monitoring':='call'}
 // Report counter from the extended block. A value that keeps moving proves
@@ -591,6 +617,9 @@ END_VAR
       <LineId Id="1" Count="0" />
     </LineIds>
     <LineIds Name="FB_Gamepad_Controller.P_Motion.Get">
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Gamepad_Controller.P_Ext_Battery.Get">
       <LineId Id="1" Count="0" />
     </LineIds>
     <LineIds Name="FB_Gamepad_Controller.P_Sequence.Get">

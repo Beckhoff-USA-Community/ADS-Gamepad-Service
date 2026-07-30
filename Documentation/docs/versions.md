@@ -12,8 +12,9 @@ The wire format between the service and its consumers is treated as frozen. Addi
 | 2.3.0 | 1.2 | Beckhoff RT Linux support |
 | 2.4.0 | 1.2 | Rewritten documentation site; the service itself is unchanged |
 | 2.5.0 | 1.3 | Extended controller data block; read it with library 2.1.0 or newer |
+| 2.6.0 | 1.4 | Battery detail in the extended block, verified against a full charge cycle; read it with library 2.2.1 |
 
-Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. AdsGamepad 2.1.0 adds the extended block support and works against any 2.x service; against a service older than 2.5.0 the extended data simply reads zero. TcCOM module versions are independent; the module reads the same contract. Any 2.x service serves any consumer, since the controller block never changed shape.
+Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. AdsGamepad 2.1.0 adds the extended block support and works against any 2.x service; against a service older than 2.5.0 the extended data simply reads zero. AdsGamepad 2.2.1 adds P_Ext_Battery for the battery fields a 2.6.0 or newer service fills. TcCOM module versions are independent; the module reads the same contract. Any 2.x service serves any consumer, since the controller block never changed shape.
 
 ## The controller block
 
@@ -58,9 +59,13 @@ Since contract 1.3 each controller slot additionally answers a read of 96 bytes 
 | 20 | 6 bytes | First touch contact: active, contact number, X 0 to 1919, Y 0 to 1079 |
 | 26 | 6 bytes | Second touch contact, same shape |
 | 32 | UDINT | Report counter from the pad, widened by the service. A value that keeps moving proves the input stream is alive |
-| 36 | 4 bytes | Reserved for battery detail, zero today |
+| 36 | USINT | Battery charge, 0 to 100 percent, since contract 1.4 |
+| 37 | USINT | Battery flags: bit 0 charging, bit 1 full, since contract 1.4 |
+| 38 | 2 bytes | Reserved, zero |
 | 40 | 56 bytes | Reserved, zero |
 
 The motion values are raw on purpose: interpreting or filtering them is application code, like everything else in this project. The Create and Options buttons are not repeated here; they stay on bits 10 and 11 of the classic button word.
 
-In the PLC library the block is read by calling ReadExtended() once per cycle in addition to Cycle(). It costs one extra ADS read per cycle, and programs that never call it behave exactly as before. The values arrive through P_Ext_Buttons, P_Touchpad, P_Motion and P_Sequence.
+Since contract 1.4 the flag word additionally carries bit 1 while the battery fields hold data. The battery encoding was verified against a real pad through a complete charge cycle. When the pad reports a state the service cannot interpret, for example a temperature fault, the battery fields read zero with the flag clear rather than guessing. The classic battery bits in the States word of the controller block are unchanged; a wired PlayStation pad keeps reporting wired and full there, and the extended block is the place for the real numbers.
+
+In the PLC library the block is read by calling ReadExtended() once per cycle in addition to Cycle(). It costs one extra ADS read per cycle, and programs that never call it behave exactly as before. The values arrive through P_Ext_Buttons, P_Touchpad, P_Motion, P_Sequence and, with library 2.2.1 against a 2.6.0 or newer service, P_Ext_Battery.

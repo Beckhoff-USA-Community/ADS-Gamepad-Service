@@ -69,7 +69,11 @@ namespace AdsGamepadService.Tests
                 AccelZ: -8100,
                 Touch0: new GamepadTouchPoint(Active: true, ContactId: 5, X: 1919, Y: 1079),
                 Touch1: default,
-                Sequence: 0x00012345);
+                Sequence: 0x00012345,
+                BatteryPercent: 75,
+                BatteryCharging: true,
+                BatteryFull: false,
+                BatteryValid: true);
         }
 
         [Fact]
@@ -151,7 +155,6 @@ namespace AdsGamepadService.Tests
             Assert.Equal(96, BitConverter.ToUInt16(data, 0));
             Assert.Equal(1, BitConverter.ToUInt16(data, 2));
             Assert.Equal(DualSenseReport.ExtPs | DualSenseReport.ExtTouchpadClick, BitConverter.ToUInt16(data, 4));
-            Assert.Equal(1, BitConverter.ToUInt16(data, 6));
             Assert.Equal(1234, BitConverter.ToInt16(data, 8));
             Assert.Equal(-1234, BitConverter.ToInt16(data, 10));
             Assert.Equal(42, BitConverter.ToInt16(data, 12));
@@ -164,9 +167,10 @@ namespace AdsGamepadService.Tests
             Assert.Equal(1079, BitConverter.ToUInt16(data, 24));
             Assert.Equal(new byte[6], data[26..32]);
             Assert.Equal(0x00012345u, BitConverter.ToUInt32(data, 32));
-            // Battery bytes are reserved zeroes until their semantics are pinned
-            Assert.Equal(0, data[36]);
-            Assert.Equal(0, data[37]);
+            // Battery valid: flags word carries bit 1, percent and state fill in
+            Assert.Equal(3, BitConverter.ToUInt16(data, 6));
+            Assert.Equal(75, data[36]);
+            Assert.Equal(AdsControllerServer.BatteryFlagCharging, data[37]);
             Assert.Equal(new byte[58], data[38..]);
         }
 
@@ -322,6 +326,82 @@ namespace AdsGamepadService.Tests
         {
             report[offset] = (byte)value;
             report[offset + 1] = (byte)(value >> 8);
+        }
+
+        /* Battery decode vectors anchored to the observed charge cycle of a
+           real pad: 0x17 through 0x19 while charging, 0x28 and 0x2A at
+           full, plus the formula edges and the error states. */
+        [Theory]
+        [InlineData(0x17, true, 75, true, false)]
+        [InlineData(0x18, true, 85, true, false)]
+        [InlineData(0x19, true, 95, true, false)]
+        [InlineData(0x28, true, 100, false, true)]
+        [InlineData(0x2A, true, 100, false, true)]
+        [InlineData(0x05, true, 55, false, false)]
+        [InlineData(0x00, true, 5, false, false)]
+        [InlineData(0x0A, true, 100, false, false)]
+        [InlineData(0x1F, true, 100, true, false)]
+        [InlineData(0xA3, false, 0, false, false)]
+        [InlineData(0xF0, false, 0, false, false)]
+        public void BatteryDecodeMatchesTheObservedChargeCycle(byte raw, bool expectValid, byte expectPercent, bool expectCharging, bool expectFull)
+        {
+            bool valid = DualSenseReport.TryDecodeBattery(raw, out byte percent, out bool charging, out bool full);
+            Assert.Equal(expectValid, valid);
+            Assert.Equal(expectPercent, percent);
+            Assert.Equal(expectCharging, charging);
+            Assert.Equal(expectFull, full);
+        }
+
+        /* The battery byte rides at offset 53; a report long enough for
+           motion but short of the battery byte keeps the fields unknown. */
+        [Fact]
+        public void ParserPicksUpTheBatteryByteOnlyFromAFullLengthReport()
+        {
+            byte[] full = new byte[64];
+            full[0] = 0x01;
+            full[8] = 0x08;
+            full[53] = 0x2A;
+            Assert.True(DualSenseReport.TryParse(full, out DualSenseState fullState));
+            Assert.True(fullState.BatteryKnown);
+            Assert.Equal(0x2A, fullState.BatteryRaw);
+
+            byte[] shortReport = new byte[45];
+            shortReport[0] = 0x01;
+            shortReport[8] = 0x08;
+            Assert.True(DualSenseReport.TryParse(shortReport, out DualSenseState shortState));
+            Assert.False(shortState.BatteryKnown);
+        }
+
+        [Fact]
+        public void DualSensePadPublishesDecodedBatteryThroughTheExtendedInterface()
+        {
+            var state = new DualSenseState(
+                ThumbLX: 0, ThumbLY: 0, ThumbRX: 0, ThumbRY: 0,
+                LeftTrigger: 0, RightTrigger: 0, WireButtons: 0,
+                BatteryRaw: 0x18, BatteryKnown: true);
+            using var pad = new DualSenseGamepad(3, NullLogger.Instance);
+            pad.ApplySnapshot(in state);
+
+            Assert.True(pad.TryGetExtended(out GamepadExtendedState extended));
+            Assert.True(extended.BatteryValid);
+            Assert.Equal(85, extended.BatteryPercent);
+            Assert.True(extended.BatteryCharging);
+            Assert.False(extended.BatteryFull);
+        }
+
+        [Fact]
+        public async Task ExtReadWithoutValidBatteryKeepsTheBatteryBytesZero()
+        {
+            var ext = SampleExtended() with { BatteryValid = false, BatteryPercent = 0, BatteryCharging = false };
+            var pad = new FakeExtendedGamepad { ControllerNumber = 1, Connected = true, Extended = ext };
+            using var server = new TestableAdsControllerServer(FourPads(pad));
+
+            var result = await server.ReadAsync(0x10100, 0, 96);
+
+            byte[] data = result.Data.ToArray();
+            Assert.Equal(1, BitConverter.ToUInt16(data, 6));
+            Assert.Equal(0, data[36]);
+            Assert.Equal(0, data[37]);
         }
     }
 }

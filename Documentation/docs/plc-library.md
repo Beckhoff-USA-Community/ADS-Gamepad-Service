@@ -34,7 +34,7 @@ Call Cycle() once per PLC cycle. It issues the ADS read for the controller block
 * P_Buttons with one BOOL per button: the four face buttons, DPad directions, shoulder buttons, stick clicks, Start and Back.
 * P_Status with the connected state and battery information.
 * SetRumble() to drive the two rumble motors, values 0 to 100 per motor.
-* ReadExtended() as an optional second call per cycle for the extended data of a PlayStation pad: P_Ext_Buttons, P_Touchpad, P_Motion and P_Sequence. The block behind it is described on the [versions page](versions.md). Programs that never call it behave exactly as before.
+* ReadExtended() as an optional second call per cycle for the extended data of a PlayStation pad: P_Ext_Buttons, P_Touchpad, P_Motion, P_Sequence and P_Ext_Battery with the real charge percent and charging state. The block behind it is described on the [versions page](versions.md). Programs that never call it behave exactly as before.
 * P_Handshake_State and P_Service_Info with the result of the version handshake, described on the [versions page](versions.md).
 
 With a DualSense in the slot the values arrive in the same ranges and on the same properties: Cross, Circle, Square and Triangle map onto A, B, X and Y, Create onto Back and Options onto Start.

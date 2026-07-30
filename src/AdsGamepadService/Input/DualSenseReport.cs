@@ -22,7 +22,9 @@ namespace AdsGamepadService.Input
         short AccelZ = 0,
         GamepadTouchPoint Touch0 = default,
         GamepadTouchPoint Touch1 = default,
-        byte Sequence = 0);
+        byte Sequence = 0,
+        byte BatteryRaw = 0,
+        bool BatteryKnown = false);
 
     internal static class DualSenseReport
     {
@@ -78,6 +80,14 @@ namespace AdsGamepadService.Input
         /* Motion and touch live past the classic control bytes; a report
            short of this length keeps the extended fields zeroed. */
         private const int ExtendedReportLength = 41;
+
+        /* The battery byte sits at offset 53; its encoding was verified
+           against a real pad through a full charge cycle. Low nibble is the
+           capacity in steps of ten percent, 0 to 10. High nibble is the
+           state: 0 discharging, 1 charging, 2 full. Higher state values
+           are error conditions the pad can report; they read as unknown. */
+        private const int BatteryReportLength = 55;
+        private const int BatteryOffset = 53;
 
         /* Hat nibble to dpad bits. 0 is up, values run clockwise through the
            diagonals, 8 is released. */
@@ -156,8 +166,40 @@ namespace AdsGamepadService.Input
                 AccelZ: accelZ,
                 Touch0: touch0,
                 Touch1: touch1,
-                Sequence: report.Length >= ExtendedReportLength ? report[7] : (byte)0);
+                Sequence: report.Length >= ExtendedReportLength ? report[7] : (byte)0,
+                BatteryRaw: report.Length >= BatteryReportLength ? report[BatteryOffset] : (byte)0,
+                BatteryKnown: report.Length >= BatteryReportLength);
             return true;
+        }
+
+        /* Decodes the battery byte into the wire values of the extended
+           block. Capacity steps map to the middle of their ten percent band,
+           the value the pad itself rounds to; a full pad always reads 100.
+           An error state from the pad reads as not valid, and the block
+           then serves zeroes rather than a guess. */
+        internal static bool TryDecodeBattery(byte raw, out byte percent, out bool charging, out bool full)
+        {
+            int capacity = raw & 0x0F;
+            int state = raw >> 4;
+            switch (state)
+            {
+                case 0:
+                case 1:
+                    percent = (byte)Math.Min(capacity * 10 + 5, 100);
+                    charging = state == 1;
+                    full = false;
+                    return true;
+                case 2:
+                    percent = 100;
+                    charging = false;
+                    full = true;
+                    return true;
+                default:
+                    percent = 0;
+                    charging = false;
+                    full = false;
+                    return false;
+            }
         }
 
         private static short ReadInt16(ReadOnlySpan<byte> report, int offset)

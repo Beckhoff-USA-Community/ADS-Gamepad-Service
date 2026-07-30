@@ -15,7 +15,8 @@ STRUCT
 	nExtLayoutVersion	: UINT;
 	// Bit 0 PS, bit 1 Mute, bit 2 touchpad click
 	nExtButtons			: WORD;
-	// Bit 0 set means this slot supplies extended data right now
+	// Bit 0 set means this slot supplies extended data right now.
+	// Bit 1 set means the battery fields below hold data, since contract 1.4
 	nExtFlags			: WORD;
 	// Raw motion sensor values. Interpreting them is application code
 	nGyroX				: INT;
@@ -30,7 +31,8 @@ STRUCT
 	// Report counter from the pad, widened by the service. A value that
 	// keeps moving proves the input stream is alive
 	nSequence			: UDINT;
-	// Reserved until the battery report bytes are verified, zero today
+	// Battery data since contract 1.4, gated on flag bit 1: charge in
+	// percent, then bit 0 charging and bit 1 full. Use P_Ext_Battery
 	nBatteryPercent		: USINT;
 	nBatteryFlags		: USINT;
 	nReserved			: UINT;

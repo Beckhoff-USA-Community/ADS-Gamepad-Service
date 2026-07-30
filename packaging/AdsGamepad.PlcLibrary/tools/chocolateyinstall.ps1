@@ -24,7 +24,7 @@ if ($proc.ExitCode -ne 0) {
 
 # RepTool exit codes are not documented, so the outcome is checked directly:
 # the library must exist in the repository after the install
-$repoEntry = Join-Path $env:ALLUSERSPROFILE 'Beckhoff\TwinCAT\PlcEngineering\Managed Libraries\Beckhoff Community\AdsGamepad\2.0.0'
+$repoEntry = Join-Path $env:ALLUSERSPROFILE 'Beckhoff\TwinCAT\PlcEngineering\Managed Libraries\Beckhoff Community\AdsGamepad\2.2.1'
 if (-not (Test-Path $repoEntry)) {
     throw "The library did not appear in the library repository under $repoEntry. Close XAE and install the package again."
 }

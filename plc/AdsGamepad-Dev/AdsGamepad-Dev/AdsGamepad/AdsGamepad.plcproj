@@ -17,7 +17,7 @@
     <LibraryReferences>{b29f5ee5-d38d-497f-ae98-ee34c52a5f1c}</LibraryReferences>
     <Released>true</Released>
     <Title>AdsGamepad</Title>
-    <ProjectVersion>2.1.0</ProjectVersion>
+    <ProjectVersion>2.2.1</ProjectVersion>
     <Author>Beckhoff USA Community</Author>
     <Company>Beckhoff Community</Company>
     <CombineIds>true</CombineIds>
@@ -73,6 +73,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DUTs\ST_Gamepad_Ext_ADS_Inputs.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\ST_Gamepad_Ext_Battery.TcDUT">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="DUTs\ST_Gamepad_Ext_Buttons.TcDUT">

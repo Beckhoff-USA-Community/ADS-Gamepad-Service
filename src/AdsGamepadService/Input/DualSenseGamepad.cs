@@ -103,9 +103,9 @@ namespace AdsGamepadService.Input
 
         public ushort ButtonBits => _current.WireButtons;
 
-        /* The pad runs from the USB cable. The battery detail bytes of the
-           report are not decoded yet, so the wire reports a wired pad with a
-           full level, the most truthful constant available. */
+        /* The pad runs from the USB cable, so the classic States word
+           reports a wired pad with a full level by design and never
+           changes; the real charge numbers live in the extended block. */
         public GamepadBatteryType BatteryType => _connected ? GamepadBatteryType.Wired : GamepadBatteryType.None;
 
         public GamepadBatteryLevel BatteryLevel => _connected ? GamepadBatteryLevel.Full : GamepadBatteryLevel.None;
@@ -121,6 +121,11 @@ namespace AdsGamepadService.Input
                 state = default;
                 return false;
             }
+            byte percent = 0;
+            bool charging = false;
+            bool full = false;
+            bool batteryValid = _current.BatteryKnown
+                && DualSenseReport.TryDecodeBattery(_current.BatteryRaw, out percent, out charging, out full);
             state = new GamepadExtendedState(
                 ExtButtons: _current.ExtButtons,
                 GyroX: _current.GyroX,
@@ -131,7 +136,11 @@ namespace AdsGamepadService.Input
                 AccelZ: _current.AccelZ,
                 Touch0: _current.Touch0,
                 Touch1: _current.Touch1,
-                Sequence: _extSequence);
+                Sequence: _extSequence,
+                BatteryPercent: percent,
+                BatteryCharging: charging,
+                BatteryFull: full,
+                BatteryValid: batteryValid);
             return true;
         }
 

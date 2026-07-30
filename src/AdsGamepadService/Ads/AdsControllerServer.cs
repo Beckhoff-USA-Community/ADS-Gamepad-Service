@@ -67,11 +67,10 @@ namespace AdsGamepadService
             public ushort Y;
         }
 
-        /* Wire image of the extended block, contract v1.3. Serialized into a
-           96 byte reply; everything past this struct is reserved and stays
-           zero until a later contract minor assigns meaning. The battery
-           bytes are reserved zeroes too, until their report semantics are
-           pinned against real charge states. */
+        /* Wire image of the extended block, contract v1.3; the battery
+           fields carry data since v1.4. Serialized into a 96 byte reply;
+           everything past this struct is reserved and stays zero until a
+           later contract minor assigns meaning. */
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         internal struct AdsGamepadExtInputs
         {
@@ -101,12 +100,18 @@ namespace AdsGamepadService
         internal const int ExtStructSize = 40;
         internal const ushort ExtBlockLayoutVersion = 1;
         internal const ushort ExtFlagDataPresent = 0x0001;
+        /* Since contract 1.4: the battery fields carry decoded data. The
+           flag is per read, so a pad state the service cannot interpret
+           falls back to zeroes without lying. */
+        internal const ushort ExtFlagBatteryValid = 0x0002;
+        internal const byte BatteryFlagCharging = 0x01;
+        internal const byte BatteryFlagFull = 0x02;
 
         /* 0xF000 sits outside every controller read group and every rumble
            sum, so contract v1 clients never collide with it. */
         internal const uint ServiceInfoIndexGroup = 0xF000;
         internal const ushort ContractVersionMajor = 1;
-        internal const ushort ContractVersionMinor = 3;
+        internal const ushort ContractVersionMinor = 4;
         internal const uint CapabilityXInputBackend = 1u << 0;
         internal const uint CapabilityDualSenseBackend = 1u << 1;
         internal const uint CapabilityExtendedBlock = 1u << 2;
@@ -414,6 +419,13 @@ namespace AdsGamepadService
                 inputs.Touch0 = ToWireTouch(state.Touch0);
                 inputs.Touch1 = ToWireTouch(state.Touch1);
                 inputs.Sequence = state.Sequence;
+                if (state.BatteryValid)
+                {
+                    inputs.ExtFlags |= ExtFlagBatteryValid;
+                    inputs.BatteryPercent = state.BatteryPercent;
+                    inputs.BatteryFlags = (byte)((state.BatteryCharging ? BatteryFlagCharging : 0)
+                        | (state.BatteryFull ? BatteryFlagFull : 0));
+                }
             }
             return inputs;
         }

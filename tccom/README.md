@@ -72,6 +72,9 @@ The extended values arrive in their own output area, ExtOutputs:
 * stTouch0 and stTouch1 are the two touchpad contacts with an active flag, a contact counter and the position on the pad.
 * nSequence is the report counter of the pad, widened by the service. A value that keeps moving proves the input stream is alive, so it makes a good watchdog.
 * nExtDataAgeCycles counts task cycles since the last successful extended read, separate from the gamepad age.
+* nBatteryPercent is the battery charge from 0 to 100.
+* bBatteryCharging and bBatteryFull show the charging state.
+* bBatteryValid is TRUE while the service supplies battery data. The battery values need a service of release 2.6.0 or newer; older services leave them zero with the flag clear.
 
 An error on the extended read zeroes only the extended values; the gamepad exchange keeps running untouched.
 

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>Beckhoff-USA-Community.XAR.Service.AdsGamepad</id>
-    <version>2.5.0</version>
+    <version>2.6.0</version>
     <title>ADS Gamepad Service</title>
     <authors>Beckhoff Automation LLC</authors>
     <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
@@ -12,7 +12,7 @@
     <readme>docs/README.md</readme>
     <summary>Gamepad to PLC bridge service for TwinCAT runtime systems</summary>
     <tags>Beckhoff Setup SystemServiceRestart</tags>
-    <releaseNotes>Version 2.5.0 adds the extended controller data block, wire contract 1.3: the extra PlayStation buttons, the touchpad contacts, raw motion values and a liveness counter, served as a separate 96 byte read per controller slot. The classic controller block is untouched and existing programs keep working unchanged. Read the new block with PLC library 2.1.0 or the TcCOM module.</releaseNotes>
+    <releaseNotes>Version 2.6.0 fills the battery fields of the extended data block, wire contract 1.4: charge percent and charging state of a PlayStation controller, verified against a real pad through a complete charge cycle. Everything else is unchanged; a program that does not read the battery fields never notices the difference. Read them with PLC library 2.2.0 or the TcCOM module.</releaseNotes>
     <description>ADS Gamepad Service reads game controllers on a TwinCAT system and serves their state to the PLC over ADS. It supports Xbox controllers through the XInput interface and wired PlayStation 5 DualSense controllers over USB, selectable per controller slot. The service registers ADS port 25733 with the local router and answers the reads issued by the companion PLC library. It runs as a Windows service with delayed automatic start and keeps its settings in an appsettings.json file next to the executable.</description>
     <dependencies>
       <dependency id="TwinCAT.XAR.AdsApi" version="0.0.0" />

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <DUT Name="ST_Gamepad_Ext_Battery" Id="{bb9ccf50-c8d1-4e72-98e7-0358253ce437}">
+    <Declaration><![CDATA[// Battery state from the extended block. Valid only while bValid is TRUE:
+// a service older than 2.6.0 does not serve it, an Xbox slot has none, and
+// a pad error state reads as not valid rather than as a guess.
+TYPE ST_Gamepad_Ext_Battery :
+STRUCT
+	// TRUE while the service supplies battery data for this slot
+	bValid		: BOOL;
+	// Charge from 0 to 100 percent
+	nPercent	: USINT;
+	// TRUE while the pad charges over its cable
+	bCharging	: BOOL;
+	// TRUE when the battery is full
+	bFull		: BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

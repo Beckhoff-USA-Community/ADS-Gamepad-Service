@@ -952,6 +952,10 @@ void CGamepad::DecodeExtOutputs()
 	m_ExtOutputs.stTouch1.nX = m_ExtWireData.nTouch1X;
 	m_ExtOutputs.stTouch1.nY = m_ExtWireData.nTouch1Y;
 	m_ExtOutputs.nSequence = m_ExtWireData.nSequence;
+	m_ExtOutputs.bBatteryValid = (m_ExtWireData.nExtFlags & GAMEPAD_EXTFLAG_BATTERY_VALID) != 0;
+	m_ExtOutputs.nBatteryPercent = m_ExtWireData.nBatteryPercent;
+	m_ExtOutputs.bBatteryCharging = (m_ExtWireData.nBatteryFlags & GAMEPAD_BATTERYFLAG_CHARGING) != 0;
+	m_ExtOutputs.bBatteryFull = (m_ExtWireData.nBatteryFlags & GAMEPAD_BATTERYFLAG_FULL) != 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -973,4 +977,8 @@ void CGamepad::ZeroExtOutputs()
 	memset(&m_ExtOutputs.stTouch0, 0, sizeof(m_ExtOutputs.stTouch0));
 	memset(&m_ExtOutputs.stTouch1, 0, sizeof(m_ExtOutputs.stTouch1));
 	m_ExtOutputs.nSequence = 0;
+	m_ExtOutputs.nBatteryPercent = 0;
+	m_ExtOutputs.bBatteryCharging = false;
+	m_ExtOutputs.bBatteryFull = false;
+	m_ExtOutputs.bBatteryValid = false;
 }

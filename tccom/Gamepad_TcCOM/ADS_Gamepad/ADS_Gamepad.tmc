@@ -565,6 +565,26 @@
             <Comment>Task cycles since the last successful extended read. Climbs forever while extended reads are off or failing.</Comment>
             <BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
           </Symbol>
+          <Symbol>
+            <Name>nBatteryPercent</Name>
+            <Comment>Battery charge from 0 to 100. Valid while bBatteryValid is TRUE.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>bBatteryCharging</Name>
+            <Comment>TRUE while the battery is charging.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>bBatteryFull</Name>
+            <Comment>TRUE while the battery is fully charged.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+          </Symbol>
+          <Symbol>
+            <Name>bBatteryValid</Name>
+            <Comment>TRUE while the service supplies battery data. Services older than 2.6.0 leave the battery values zero.</Comment>
+            <BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+          </Symbol>
         </DataArea>
       </DataAreas>
       <InterfacePointers>
@@ -580,6 +600,6 @@
   </Modules>
   <Library>
     <Name>ADS_Gamepad</Name>
-    <Version>0.0.0.9</Version>
+    <Version>0.0.0.10</Version>
   </Library>
 </TcModuleClass>

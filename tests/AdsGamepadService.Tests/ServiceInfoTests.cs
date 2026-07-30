@@ -65,7 +65,7 @@ namespace AdsGamepadService.Tests
             byte[] data = result.Data.ToArray();
             Assert.Equal(32, data.Length);
             Assert.Equal(1, BitConverter.ToUInt16(data, 0));
-            Assert.Equal(3, BitConverter.ToUInt16(data, 2));
+            Assert.Equal(4, BitConverter.ToUInt16(data, 2));
             Assert.Equal((ushort)version.Major, BitConverter.ToUInt16(data, 4));
             Assert.Equal((ushort)version.Minor, BitConverter.ToUInt16(data, 6));
             Assert.Equal((ushort)version.Build, BitConverter.ToUInt16(data, 8));

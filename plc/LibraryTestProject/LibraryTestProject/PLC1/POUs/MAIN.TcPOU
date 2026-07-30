@@ -13,7 +13,7 @@ END_VAR
       <ST><![CDATA[XBOX_Elite.Cycle();
 XBOX_Adaptive.Cycle();
 Dual_Sense.Cycle();
-]]></ST>
+Dual_Sense.ReadExtended();]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>
