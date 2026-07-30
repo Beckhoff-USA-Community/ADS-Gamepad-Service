@@ -1,6 +1,6 @@
 # ADS Gamepad Service
 
-ADS Gamepad Service connects PlayStation and Xbox gamepads attached to PCs, IPCs, and CX devices, then hosts the input data over ADS for the PLC to access. It runs as a system service on TwinCAT Windows systems and on Beckhoff RT Linux, and includes a PLC library and a TcCOM module for reading gamepad data in your project. The PlayStation 5 DualSense is the recommended controller: it connects over USB or Bluetooth, reports a real battery percentage, and serves extra data such as the touchpad and motion sensors. The full documentation lives under Documentation in this repository.
+ADS Gamepad Service connects PlayStation and Xbox gamepads attached to PCs, IPCs, and CX devices, then hosts the input data over ADS for the PLC to access. It runs as a system service on TwinCAT Windows systems and on Beckhoff RT Linux, and includes a PLC library and a TcCOM module for reading gamepad data in your project. The PlayStation 5 DualSense is the recommended controller: it connects over USB or Bluetooth, reports a real battery percentage, and serves extra data such as the touchpad and motion sensors. The full documentation lives under [Documentation in this repository.](https://beckhoff-usa-community.github.io/ADS-Gamepad-Service/)
 
 ## Installing on Windows
 

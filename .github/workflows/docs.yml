@@ -33,7 +33,7 @@ jobs:
   # Publishing needs GitHub Pages enabled for the repository with the
   # GitHub Actions source. Until then, run this manually after enabling it.
   deploy:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
