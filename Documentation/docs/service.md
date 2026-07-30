@@ -11,7 +11,7 @@ Settings live in appsettings.json next to the service executable. Edit the file,
 | AmsPort | 25733 | The ADS port the server registers with the local router. The PLC library and the TcCOM module connect to this port, so only change it if you also change it on the consuming side. |
 | ServerName | XboxAdsServer | The name of the registration. It appears in router diagnostics and has no effect on the connection. The name is part of the frozen wire identity and predates the project rename. |
 | MaxControllers | 4 | How many controller slots are polled, from 1 to 4. Slots above this count still answer reads but always report as disconnected. |
-| SlotSources | all XInput | The input backend for each of the four slots, in slot order. XInput polls the Xbox controller with the same number as the slot. DualSense reads one PlayStation 5 controller, on Windows over USB or Bluetooth; at most one slot can use it. Missing entries mean XInput. |
+| SlotSources | all XInput | The input backend for each of the four slots, in slot order. XInput polls the Xbox controller with the same number as the slot. DualSense reads one PlayStation 5 controller, over USB or Bluetooth; at most one slot can use it. Missing entries mean XInput. |
 
 Example with an Xbox controller on slot one and a DualSense on slot two:
 
@@ -49,7 +49,7 @@ Wireless Xbox controllers connect through the official Xbox Wireless Adapter and
 
 The DualSense is the controller this project recommends. One USB cable is the whole setup, the pad reconnects on its own after cable pulls and reboots, and it is the only pad that reports a real battery percentage and charging state, served through the extended data block along with the touchpad and the motion sensors.
 
-On Windows the DualSense connects over USB or Bluetooth. Pair it once through the Windows Bluetooth settings, and the service picks it up with no configuration change; when both transports are present the cable wins. The log states which transport a pad connected over. Industrial PCs often ship without a Bluetooth radio; the Windows installation page covers adding one. On Linux the DualSense connects over USB only.
+The DualSense connects over USB or Bluetooth. Pair it once with the system, on Windows through the Bluetooth settings and on Linux with bluetoothctl, and the service picks it up with no configuration change; when both transports are present the cable wins. The log states which transport a pad connected over. Industrial PCs often ship without a Bluetooth radio; the installation pages cover adding one. On Linux, Bluetooth additionally needs a kernel that includes the Bluetooth stack, which the standard Beckhoff kernel does not ship; the Linux installation page has the details.
 
 A pad that is still paired with a phone, laptop or PlayStation sends its buttons to that device even while the cable is plugged in, which from this side looks like a connected pad that never reacts. The service detects that state and logs a warning. Unpair the controller from every other device before wired use, and expect a Bluetooth pad to go to sleep when idle; the PS button wakes it and the service reconnects on its own.
 

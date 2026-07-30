@@ -25,10 +25,11 @@ namespace AdsGamepadService
            default to XInput, the behavior of every release before 2.2.0.
            XInput polls the pad with the same number as the slot, so slot one
            reads XInput index zero. DualSense reads one PlayStation 5
-           controller over raw HID, on Windows over USB or Bluetooth with
-           the cable preferred; at most one slot can use it, since the
-           service opens a single pad. A slot never changes its backend at
-           runtime, only through this setting. */
+           controller over raw HID, over USB or Bluetooth with the cable
+           preferred (on Linux the Bluetooth path additionally needs a
+           kernel with the Bluetooth stack); at most one slot can use it,
+           since the service opens a single pad. A slot never changes its
+           backend at runtime, only through this setting. */
         public string[]? SlotSources { get; set; }
 
         public string[] Validate()

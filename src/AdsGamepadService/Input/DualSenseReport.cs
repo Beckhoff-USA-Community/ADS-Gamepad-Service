@@ -242,7 +242,12 @@ namespace AdsGamepadService.Input
                 AccelZ: accelZ,
                 Touch0: touch0,
                 Touch1: touch1,
-                Sequence: report.Length >= ExtendedReportLength + o ? report[7 + o] : (byte)0,
+                /* Over Bluetooth the classic counter byte never moves; the
+                   pad steps the upper nibble of byte 1 per frame instead,
+                   so the sequence comes from there. Four bits wide, the
+                   reader masks the wrap accordingly. */
+                Sequence: o == 1 ? (byte)(report[1] >> 4)
+                    : report.Length >= ExtendedReportLength ? report[7] : (byte)0,
                 BatteryRaw: report.Length >= BatteryReportLength + o ? report[BatteryOffset + o] : (byte)0,
                 BatteryKnown: report.Length >= BatteryReportLength + o);
             return true;

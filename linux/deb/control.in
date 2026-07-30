@@ -7,7 +7,8 @@ Depends: libc6
 Maintainer: Beckhoff USA Community
 Homepage: https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service
 Description: Bridges gamepads to TwinCAT PLCs over ADS
- Reads a wired PlayStation 5 DualSense controller and serves its state to
+ Reads a PlayStation 5 DualSense controller over USB, or over Bluetooth on
+ a kernel that provides the Bluetooth stack, and serves its state to
  TwinCAT PLCs over ADS on port 25733. Runs as a systemd service under its
  own service account. Settings live in
  /opt/ads-gamepad-service/appsettings.json and survive upgrades.

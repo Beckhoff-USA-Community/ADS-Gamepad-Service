@@ -2,9 +2,12 @@ using Microsoft.Extensions.Logging;
 
 namespace AdsGamepadService.Input
 {
-    /* Reads one wired PlayStation 5 DualSense controller over raw HID, on
+    /* Reads one PlayStation 5 DualSense controller over raw HID, on
        Windows through the HID class API and on Linux through the hidraw
-       device node; the report bytes are identical on both. A background
+       device node; the report bytes are identical on both. The pad connects
+       over USB or Bluetooth with the cable preferred; on Linux the
+       Bluetooth path additionally needs the kernel Bluetooth stack, which
+       the standard Beckhoff kernel does not ship. A background
        thread blocks on the device, which delivers a report roughly every
        four milliseconds while the pad is connected, and stores the newest
        decoded state. Update just takes that snapshot, so the ADS callback
@@ -19,8 +22,9 @@ namespace AdsGamepadService.Input
         private const string WindowsPathMatch = "vid_054c&pid_0ce6";
         // The Bluetooth HID node carries the ids in this path shape instead
         private const string WindowsBtPathMatch = "_vid&0002054c_pid&0ce6";
-        // Bus 0003 is USB; the prefix excludes Bluetooth pads like mi_03 does on Windows
-        private const string LinuxHidIdMatch = "0003:0000054C:00000CE6";
+        // Bus 0003 is the pad on USB, bus 0005 the same pad over Bluetooth
+        private const string LinuxUsbHidIdMatch = "0003:0000054C:00000CE6";
+        private const string LinuxBtHidIdMatch = "0005:0000054C:00000CE6";
         // Feature report 0x05 holds calibration; reading it also switches a
         // Bluetooth pad from its simplified reports to the full 0x31 frames
         private const byte BtModeSwitchFeatureId = 0x05;
@@ -104,11 +108,12 @@ namespace AdsGamepadService.Input
             return nowTick - reportTick < StaleReportMs;
         }
 
-        /* The byte difference counts dropped reports and survives the eight
-           bit wrap, so the wide counter only ever moves forward. */
-        internal static uint AdvanceWideSequence(uint wideSequence, byte lastSequence, byte nextSequence)
+        /* The masked difference counts dropped reports and survives the
+           wrap, so the wide counter only ever moves forward. The counter is
+           eight bits on USB and four bits on Bluetooth, hence the mask. */
+        internal static uint AdvanceWideSequence(uint wideSequence, byte lastSequence, byte nextSequence, byte counterMask = 0xFF)
         {
-            return wideSequence + (byte)(nextSequence - lastSequence);
+            return wideSequence + (uint)((nextSequence - lastSequence) & counterMask);
         }
 
         /* The published X carries the physical Y axis and the published Y the
@@ -316,16 +321,16 @@ namespace AdsGamepadService.Input
            fails is treated as a failed open and retried. */
         private IHidChannel? OpenChannel()
         {
+            bool preferBluetooth = _retryPreferBluetooth;
+            _retryPreferBluetooth = false;
             IHidChannel? channel;
             if (OperatingSystem.IsWindows())
             {
-                bool preferBluetooth = _retryPreferBluetooth;
-                _retryPreferBluetooth = false;
                 channel = WindowsHidChannel.Open(WindowsPathMatch, WindowsBtPathMatch, preferBluetooth);
             }
             else
             {
-                channel = LinuxHidChannel.Open(LinuxHidIdMatch);
+                channel = LinuxHidChannel.Open(LinuxUsbHidIdMatch, LinuxBtHidIdMatch, preferBluetooth);
             }
             if (channel is not null && channel.IsBluetooth && !RequestFullReports(channel))
             {
@@ -414,6 +419,7 @@ namespace AdsGamepadService.Input
             byte lastSequence = 0;
             bool sequenceSeeded = false;
             int simplifiedFrames = 0;
+            byte counterMask = channel.IsBluetooth ? (byte)0x0F : (byte)0xFF;
 
             while (!_stopping)
             {
@@ -446,7 +452,7 @@ namespace AdsGamepadService.Input
 
                 if (sequenceSeeded)
                 {
-                    wideSequence = AdvanceWideSequence(wideSequence, lastSequence, state.Sequence);
+                    wideSequence = AdvanceWideSequence(wideSequence, lastSequence, state.Sequence, counterMask);
                 }
                 else
                 {
@@ -471,9 +477,13 @@ namespace AdsGamepadService.Input
                     /* Frozen controls on a USB stream usually mean the pad
                        holds a Bluetooth session, possibly with this very
                        machine now that Bluetooth is a supported transport.
-                       Ending the session makes the next open try Bluetooth
-                       first, which heals the local case on its own. */
-                    if (!channel.IsBluetooth && OperatingSystem.IsWindows())
+                       When the open scan saw a Bluetooth node, ending the
+                       session makes the next open try it first, which heals
+                       the local case on its own. Without one the retry
+                       could only reopen the same USB node forever, so the
+                       stream stays up and the warning below tells the
+                       operator what to actually do. */
+                    if (!channel.IsBluetooth && channel.BluetoothAvailable)
                     {
                         _logger.LogWarning(
                             "DualSense on slot {Slot} streams USB reports but its controls are frozen, which usually means an active Bluetooth session. Trying Bluetooth.",

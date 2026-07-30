@@ -41,6 +41,16 @@ namespace AdsGamepadService.Tests
             Assert.False(full);
         }
 
+        /* Over Bluetooth the classic counter byte is static; the pad steps
+           the upper nibble of byte 1 per frame instead, measured on hardware
+           at 794 frames per second with byte 8 frozen the whole time. */
+        [Fact]
+        public void BtSequenceComesFromTheLinkCounterNibble()
+        {
+            Assert.True(DualSenseReport.TryParse(GoldenBtFrame, out DualSenseState state));
+            Assert.Equal(0x61 >> 4, state.Sequence);
+        }
+
         [Fact]
         public void CorruptedBtFrameIsRejected()
         {

@@ -270,6 +270,17 @@ namespace AdsGamepadService.Tests
             Assert.Equal(expected, DualSenseGamepad.AdvanceWideSequence(wide, last, next));
         }
 
+        /* The Bluetooth counter is only four bits wide, so the advance masks
+           the difference to the nibble before widening. */
+        [Theory]
+        [InlineData(0u, 15, 0, 1u)]
+        [InlineData(100u, 3, 7, 104u)]
+        [InlineData(100u, 12, 2, 106u)]
+        public void WideSequenceHandlesTheFourBitBluetoothCounter(uint wide, byte last, byte next, uint expected)
+        {
+            Assert.Equal(expected, DualSenseGamepad.AdvanceWideSequence(wide, last, next, 0x0F));
+        }
+
         /* Golden vector against the captured byte positions: motion at 16 to
            27, touch packets at 33 to 40, extra buttons in byte 10, the
            report counter in byte 7. */

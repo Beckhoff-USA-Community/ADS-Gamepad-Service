@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.Win32.SafeHandles;
 
@@ -20,6 +21,11 @@ namespace AdsGamepadService.Input
            framing differs from USB. */
         bool IsBluetooth { get; }
 
+        /* TRUE when the open scan saw a Bluetooth node for the pad, whether
+           or not it was chosen. The frozen stream retry only helps when a
+           Bluetooth node exists to switch to. */
+        bool BluetoothAvailable { get; }
+
         /* Reads a feature report; buffer[0] names the report id. Returns
            FALSE when the transport does not support it or the read fails. */
         bool TryReadFeature(byte[] buffer);
@@ -35,14 +41,17 @@ namespace AdsGamepadService.Input
         private readonly SafeFileHandle _write;
         private readonly object _writeSync = new();
 
-        private WindowsHidChannel(SafeFileHandle read, SafeFileHandle write, bool isBluetooth)
+        private WindowsHidChannel(SafeFileHandle read, SafeFileHandle write, bool isBluetooth, bool bluetoothAvailable)
         {
             _read = read;
             _write = write;
             IsBluetooth = isBluetooth;
+            BluetoothAvailable = bluetoothAvailable;
         }
 
         public bool IsBluetooth { get; }
+
+        public bool BluetoothAvailable { get; }
 
         /* USB is preferred: only the gamepad collection on USB interface
            three of a real pad is accepted there, other USB matches would be
@@ -100,7 +109,7 @@ namespace AdsGamepadService.Input
                 read.Dispose();
                 return null;
             }
-            return new WindowsHidChannel(read, write, isBluetooth);
+            return new WindowsHidChannel(read, write, isBluetooth, btPath is not null);
         }
 
         public bool TryReadFeature(byte[] buffer)
@@ -169,37 +178,85 @@ namespace AdsGamepadService.Input
 
     /* Linux: the hidraw character device delivers exactly one report per
        read and takes one report per write, so two unbuffered FileStreams
-       are the whole transport. No interop is needed at all. */
+       carry the reports. The only interop is a single libc ioctl for the
+       feature report read the Bluetooth mode switch needs. */
     [UnsupportedOSPlatform("windows")]
-    internal sealed class LinuxHidChannel : IHidChannel
+    internal sealed partial class LinuxHidChannel : IHidChannel
     {
         private readonly FileStream _read;
         private readonly FileStream _write;
+        private readonly SafeFileHandle _writeHandle;
         private readonly object _writeSync = new();
 
-        /* The Linux side stays USB only until the kernel side of Bluetooth
-           exists on the target platform. */
-        public bool IsBluetooth => false;
+        public bool IsBluetooth { get; }
+
+        public bool BluetoothAvailable { get; }
+
+        /* HIDIOCGFEATURE from linux/hidraw.h: a read and write ioctl in
+           group 'H', number 7, with the buffer size in the size field. */
+        internal static nuint FeatureRequestCode(int bufferLength)
+        {
+            return 0xC0000000u | ((nuint)(bufferLength & 0x3FFF) << 16) | (0x48u << 8) | 0x07u;
+        }
+
+        /* The soname, not "libc": the runtime probes dlopen with the exact
+           name plus lib/.so decorations, and on glibc none of those exist as
+           loadable files. Only the versioned soname is in the loader cache. */
+        [LibraryImport("libc.so.6", SetLastError = true)]
+        private static partial int ioctl(SafeFileHandle fd, nuint request, byte[] buffer);
 
         public bool TryReadFeature(byte[] buffer)
         {
-            return false;
+            lock (_writeSync)
+            {
+                if (_writeHandle.IsInvalid || _writeHandle.IsClosed)
+                {
+                    return false;
+                }
+                try
+                {
+                    return ioctl(_writeHandle, FeatureRequestCode(buffer.Length), buffer) >= 0;
+                }
+                catch (Exception ex) when (ex is ObjectDisposedException or DllNotFoundException or EntryPointNotFoundException)
+                {
+                    /* A resolution failure must read as a failed feature
+                       read, not kill the reader thread and with it the
+                       whole service. */
+                    return false;
+                }
+            }
         }
 
-        private LinuxHidChannel(FileStream read, FileStream write)
+        private LinuxHidChannel(FileStream read, FileStream write, bool isBluetooth, bool bluetoothAvailable)
         {
             _read = read;
             _write = write;
+            _writeHandle = write.SafeFileHandle;
+            IsBluetooth = isBluetooth;
+            BluetoothAvailable = bluetoothAvailable;
+        }
+
+        /* USB is preferred like on Windows; the caller flips the preference
+           after detecting a frozen USB stream, the signature of a pad whose
+           live session is the Bluetooth one. */
+        internal static (string Node, bool IsBluetooth)? ChooseNode(string? usbNode, string? bluetoothNode, bool preferBluetooth)
+        {
+            string? node = preferBluetooth ? bluetoothNode ?? usbNode : usbNode ?? bluetoothNode;
+            if (node is null)
+            {
+                return null;
+            }
+            return (node, node == bluetoothNode);
         }
 
         /* The kernel lists every hidraw node under /sys/class/hidraw with a
-           uevent file naming the device id as HID_ID=<bus>:<vid>:<pid>. The
-           caller passes the id with the USB bus prefix, so a Bluetooth pad,
-           which carries bus 0005 and a different report format, never
-           matches. */
-        internal static LinuxHidChannel? Open(string hidIdMatch)
+           uevent file naming the device id as HID_ID=<bus>:<vid>:<pid>.
+           Bus 0003 is USB and bus 0005 is Bluetooth, so each transport has
+           its own match and neither can take the other's node. */
+        internal static LinuxHidChannel? Open(string usbHidIdMatch, string bluetoothHidIdMatch, bool preferBluetooth = false)
         {
-            string? node = null;
+            string? usbNode = null;
+            string? btNode = null;
             try
             {
                 if (Directory.Exists("/sys/class/hidraw"))
@@ -209,10 +266,18 @@ namespace AdsGamepadService.Input
                         string uevent = Path.Combine(entry, "device", "uevent");
                         try
                         {
-                            if (File.Exists(uevent) && File.ReadAllText(uevent).Contains(hidIdMatch, StringComparison.OrdinalIgnoreCase))
+                            if (!File.Exists(uevent))
                             {
-                                node = "/dev/" + Path.GetFileName(entry);
-                                break;
+                                continue;
+                            }
+                            string content = File.ReadAllText(uevent);
+                            if (usbNode is null && content.Contains(usbHidIdMatch, StringComparison.OrdinalIgnoreCase))
+                            {
+                                usbNode = "/dev/" + Path.GetFileName(entry);
+                            }
+                            else if (btNode is null && content.Contains(bluetoothHidIdMatch, StringComparison.OrdinalIgnoreCase))
+                            {
+                                btNode = "/dev/" + Path.GetFileName(entry);
                             }
                         }
                         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -225,10 +290,12 @@ namespace AdsGamepadService.Input
             {
                 return null;
             }
-            if (node is null)
+            (string Node, bool IsBluetooth)? choice = ChooseNode(usbNode, btNode, preferBluetooth);
+            if (choice is null)
             {
                 return null;
             }
+            string node = choice.Value.Node;
 
             try
             {
@@ -236,7 +303,7 @@ namespace AdsGamepadService.Input
                 try
                 {
                     var write = new FileStream(node, FileMode.Open, FileAccess.Write, FileShare.ReadWrite, bufferSize: 1);
-                    return new LinuxHidChannel(read, write);
+                    return new LinuxHidChannel(read, write, choice.Value.IsBluetooth, btNode is not null);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
@@ -280,13 +347,15 @@ namespace AdsGamepadService.Input
             }
         }
 
+        /* Like the Windows channel, deliberately does not take the write
+           lock: the feature read ioctl can wait seconds for a silent
+           Bluetooth pad, and waiting behind it here would stall shutdown.
+           The handle refcount defers the real close until an in-flight call
+           returns, and the callers catch the disposed exceptions. */
         public void Dispose()
         {
             _read.Dispose();
-            lock (_writeSync)
-            {
-                _write.Dispose();
-            }
+            _write.Dispose();
         }
     }
 }

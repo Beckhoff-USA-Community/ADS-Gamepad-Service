@@ -1,11 +1,14 @@
 # ADS Gamepad Service on Beckhoff RT Linux
 
-The service runs on Beckhoff RT Linux as a systemd service and reads a wired
+The service runs on Beckhoff RT Linux as a systemd service and reads a
 PlayStation 5 DualSense controller over the hidraw interface. Xbox
 controllers are not supported on Linux: the Beckhoff kernel does not include
-the driver they need, so Linux is DualSense only. The ADS side is unchanged,
-the service registers port 25733 with the local TwinCAT router and the PLC
-library and TcCOM module work exactly as on Windows.
+the driver they need, so Linux is DualSense only. The pad connects over USB;
+on a kernel that provides the Bluetooth stack, which the standard Beckhoff
+kernel does not, the service also reads it over Bluetooth with the cable
+preferred. The ADS side is unchanged, the service registers port 25733 with
+the local TwinCAT router and the PLC library and TcCOM module work exactly
+as on Windows.
 
 ## Requirements
 
@@ -13,9 +16,11 @@ library and TcCOM module work exactly as on Windows.
   (the tc31-xar-um package; the service registers with its router).
 * The .NET SDK, version 10 or later, on the machine you build on. The
   target needs no .NET install, the publish output is self contained.
-* A wired DualSense controller. Unpair it from every phone, laptop or
-  PlayStation first: a pad that still holds a Bluetooth pairing sends its
-  buttons there even while the cable is plugged in here.
+* A DualSense controller. For use on the cable, unpair it from every
+  phone, laptop or PlayStation first: a pad that still holds a Bluetooth
+  pairing sends its buttons there even while the cable is plugged in here.
+  The Bluetooth pairing steps live on the Linux installation page of the
+  documentation.
 
 ## Install from the Debian package
 
