@@ -39,6 +39,8 @@ When the consumer runs on a different machine, two things are needed:
 
 The service itself needs no route configuration. It never opens connections on its own, so only the consuming side and its router need to know the way.
 
+The route does not have to be a direct network connection. TwinCAT can carry ADS over MQTT through a broker, which machines use to reach each other across separated networks and cloud boundaries. To the service nothing changes: the consumer still addresses the AMS Net ID of the service machine, and the routers handle the transport. Setting up ADS over MQTT is router configuration, covered by the Beckhoff documentation; the service needs no setting for it.
+
 ## Xbox notes
 
 After a machine reboot a wired Xbox controller may not report as connected right away. An Elite controller sleeps until its Xbox button is pressed, and the Xbox Adaptive Joystick starts in a generic input mode that XInput does not see until it is unplugged and plugged back in. Both behaviors live in the controller, not in the service; once the pad reports, data flows normally.

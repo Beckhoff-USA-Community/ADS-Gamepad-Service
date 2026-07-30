@@ -35,31 +35,22 @@ Copy-Item (Join-Path $repoRoot 'README.md') (Join-Path $docsBin 'README.md')
 Copy-Item (Join-Path $repoRoot 'CONFIGURATION.md') (Join-Path $docsBin 'CONFIGURATION.md')
 Copy-Item (Join-Path $repoRoot 'MIGRATION.md') (Join-Path $docsBin 'MIGRATION.md')
 Copy-Item (Join-Path $repoRoot 'tccom\README.md') (Join-Path $docsBin 'TcComModule.md')
-# The documentation site pages ship as plain markdown under site
-robocopy (Join-Path $repoRoot 'Documentation\docs') (Join-Path $docsBin 'site') *.md /S | Out-Null
+# The documentation site pages ship as plain markdown with their images
+robocopy (Join-Path $repoRoot 'Documentation\docs') (Join-Path $docsBin 'site') *.md *.png *.svg /S | Out-Null
 if ($LASTEXITCODE -ge 8) {
     throw "Staging the documentation site failed, robocopy code $LASTEXITCODE."
 }
 cmd /c exit 0
 
-# The TcCOM source payload is the project tree without build output, user
-# settings and licensing files
-$sourceBin = Join-Path $PSScriptRoot 'AdsGamepad.TcComSource\bin'
-if (Test-Path $sourceBin) {
-    Remove-Item $sourceBin -Recurse -Force
-}
-robocopy (Join-Path $repoRoot 'tccom\Gamepad_TcCOM') $sourceBin /E /XD _Repository _Boot _products _Deployment .vs /XF *.bak *.user *.tclrs *.suo TcSignLog.txt | Out-Null
-if ($LASTEXITCODE -ge 8) {
-    throw "Staging the TcCOM source failed, robocopy code $LASTEXITCODE."
-}
-cmd /c exit 0
-
-# The module readme travels with the source it describes
-Copy-Item (Join-Path $repoRoot 'tccom\README.md') (Join-Path $sourceBin 'README.md')
-
-# The packaged project must not point at anyone's hardware
-if (Select-String -Path (Join-Path $sourceBin 'Gamepad_TcCOM.tsproj') -Pattern 'TargetNetId="[^"]' -Quiet) {
-    throw 'The staged tsproj still carries a TargetNetId. Set the project target to Local before packing.'
+# The committed project must not point at anyone's hardware. The compiled
+# TcCOM payload is committed under AdsGamepad.TcCom\repository, so there is
+# nothing to stage for it, but the source stays in the repository and this
+# guard keeps a lab target id from ever reaching the public tree.
+$tsprojFiles = Get-ChildItem (Join-Path $repoRoot 'tccom'), (Join-Path $repoRoot 'plc') -Recurse -Filter *.tsproj
+foreach ($tsproj in $tsprojFiles) {
+    if (Select-String -Path $tsproj.FullName -Pattern 'TargetNetId="[^"]' -Quiet) {
+        throw "A committed project file carries a TargetNetId: $($tsproj.FullName). Set the project target to Local."
+    }
 }
 
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
@@ -68,7 +59,7 @@ $nuspecs = @(
     (Join-Path $PSScriptRoot 'AdsGamepadService.Service\AdsGamepadService.Service.nuspec'),
     (Join-Path $PSScriptRoot 'AdsGamepad.PlcLibrary\AdsGamepad.PlcLibrary.nuspec'),
     (Join-Path $PSScriptRoot 'AdsGamepad.Documentation\AdsGamepad.Documentation.nuspec'),
-    (Join-Path $PSScriptRoot 'AdsGamepad.TcComSource\AdsGamepad.TcComSource.nuspec'),
+    (Join-Path $PSScriptRoot 'AdsGamepad.TcCom\AdsGamepad.TcCom.nuspec'),
     (Join-Path $PSScriptRoot 'AdsGamepad.XAR\AdsGamepad.XAR.Workload.nuspec'),
     (Join-Path $PSScriptRoot 'AdsGamepad.XAE\AdsGamepad.XAE.Workload.nuspec')
 )

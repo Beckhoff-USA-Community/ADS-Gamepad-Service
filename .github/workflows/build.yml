@@ -36,16 +36,15 @@ jobs:
           Copy-Item CONFIGURATION.md packaging/AdsGamepad.Documentation/bin/CONFIGURATION.md
           Copy-Item MIGRATION.md packaging/AdsGamepad.Documentation/bin/MIGRATION.md
           Copy-Item tccom/README.md packaging/AdsGamepad.Documentation/bin/TcComModule.md
-          robocopy Documentation/docs packaging/AdsGamepad.Documentation/bin/site *.md /S | Out-Null
+          robocopy Documentation/docs packaging/AdsGamepad.Documentation/bin/site *.md *.png *.svg /S | Out-Null
           if ($LASTEXITCODE -ge 8) { throw "Staging the documentation site failed, robocopy code $LASTEXITCODE." }
           cmd /c exit 0
-          robocopy tccom/Gamepad_TcCOM packaging/AdsGamepad.TcComSource/bin /E /XD _Repository _Boot _products _Deployment .vs /XF *.bak *.user *.tclrs *.suo TcSignLog.txt | Out-Null
-          if ($LASTEXITCODE -ge 8) { throw "Staging the TcCOM source failed, robocopy code $LASTEXITCODE." }
-          Copy-Item tccom/README.md packaging/AdsGamepad.TcComSource/bin/README.md
-          if (Select-String -Path packaging/AdsGamepad.TcComSource/bin/Gamepad_TcCOM.tsproj -Pattern 'TargetNetId="[^"]' -Quiet) {
-            throw 'The staged tsproj still carries a TargetNetId. Set the project target to Local before packing.'
+          $tsprojFiles = Get-ChildItem tccom, plc -Recurse -Filter *.tsproj
+          foreach ($tsproj in $tsprojFiles) {
+            if (Select-String -Path $tsproj.FullName -Pattern 'TargetNetId="[^"]' -Quiet) {
+              throw "A committed project file carries a TargetNetId: $($tsproj.FullName). Set the project target to Local."
+            }
           }
-          cmd /c exit 0
 
       - name: Check version consistency
         if: github.ref_type == 'tag'
@@ -57,7 +56,7 @@ jobs:
           [xml]$xae = Get-Content packaging/AdsGamepad.XAE/AdsGamepad.XAE.Workload.nuspec
           [xml]$library = Get-Content packaging/AdsGamepad.PlcLibrary/AdsGamepad.PlcLibrary.nuspec
           [xml]$docs = Get-Content packaging/AdsGamepad.Documentation/AdsGamepad.Documentation.nuspec
-          [xml]$source = Get-Content packaging/AdsGamepad.TcComSource/AdsGamepad.TcComSource.nuspec
+          [xml]$tccom = Get-Content packaging/AdsGamepad.TcCom/AdsGamepad.TcCom.nuspec
           [xml]$csproj = Get-Content src/AdsGamepadService/AdsGamepadService.csproj
 
           # The release train: tag, csproj, service package and both workloads
@@ -81,7 +80,7 @@ jobs:
             @{ Nuspec = $xar; Id = 'Beckhoff-USA-Community.XAR.Service.AdsGamepad'; Expected = $service.package.metadata.version },
             @{ Nuspec = $xae; Id = 'Beckhoff-USA-Community.XAE.PLC.Lib.AdsGamepad'; Expected = $library.package.metadata.version },
             @{ Nuspec = $xae; Id = 'Beckhoff-USA-Community.XAE.Documentation.AdsGamepad'; Expected = $docs.package.metadata.version },
-            @{ Nuspec = $xae; Id = 'Beckhoff-USA-Community.XAE.TcComSource.AdsGamepad'; Expected = $source.package.metadata.version }
+            @{ Nuspec = $xae; Id = 'Beckhoff-USA-Community.XAE.TcCom.AdsGamepad'; Expected = $tccom.package.metadata.version }
           )
           foreach ($pin in $pins) {
             $actual = Get-PinnedVersion $pin.Nuspec $pin.Id
@@ -97,7 +96,7 @@ jobs:
             'packaging/AdsGamepadService.Service/AdsGamepadService.Service.nuspec',
             'packaging/AdsGamepad.PlcLibrary/AdsGamepad.PlcLibrary.nuspec',
             'packaging/AdsGamepad.Documentation/AdsGamepad.Documentation.nuspec',
-            'packaging/AdsGamepad.TcComSource/AdsGamepad.TcComSource.nuspec',
+            'packaging/AdsGamepad.TcCom/AdsGamepad.TcCom.nuspec',
             'packaging/AdsGamepad.XAR/AdsGamepad.XAR.Workload.nuspec',
             'packaging/AdsGamepad.XAE/AdsGamepad.XAE.Workload.nuspec'
           )

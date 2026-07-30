@@ -1,13 +1,13 @@
 # Installation on Windows
 
-The project ships as TwinCAT packages on the GitHub package feed of the repository. Two workloads carry everything: the runtime workload installs the Windows service on the machine with the controllers, the engineering workload installs the PLC library, this documentation, and the TcCOM module source on the machine that runs XAE, the TwinCAT engineering environment. Both show up as one card named ADS Gamepad in the TwinCAT Package Manager.
+The project ships as TwinCAT packages on the GitHub package feed of the Beckhoff USA Community organization. Two workloads carry everything: the runtime workload installs the Windows service on the machine with the controllers, the engineering workload installs the PLC library, this documentation, and the compiled Gamepad TcCOM module on the machine that runs XAE, the TwinCAT engineering environment. Both show up as one card named ADS Gamepad in the TwinCAT Package Manager.
 
 ## Adding the feed
 
 GitHub requires a login for its package feeds, even for public packages, so you need a GitHub account and a personal access token. Create a token of the classic type with the read:packages scope under Developer settings in your GitHub account settings, then from an administrator PowerShell:
 
 ```powershell
-tcpkg source add -n AdsGamepad -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
+tcpkg source add -n "Beckhoff USA Community" -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
 tcpkg config unset -n VerifySignatures
 ```
 
@@ -22,7 +22,7 @@ tcpkg install Beckhoff-USA-Community.AdsGamepad.XAR -y
 tcpkg install Beckhoff-USA-Community.AdsGamepad.XAE -y
 ```
 
-The runtime workload registers the service with delayed automatic start. The engineering workload puts the AdsGamepad library into the XAE library repository, ready to reference, and installs everything under C:\Program Files\Beckhoff USA Community\ADS Gamepad.
+The runtime workload registers the service with delayed automatic start. The engineering workload puts the AdsGamepad library into the XAE library repository ready to reference, puts the compiled Gamepad TcCOM module into the TwinCAT module repository ready to add to a project, and installs the documentation under C:\Program Files\Beckhoff USA Community\ADS Gamepad.
 
 ## Updating
 
@@ -39,7 +39,7 @@ Uninstalling a workload removes only the grouping package itself, so list the co
 
 ```powershell
 tcpkg uninstall Beckhoff-USA-Community.AdsGamepad.XAR Beckhoff-USA-Community.XAR.Service.AdsGamepad -y
-tcpkg uninstall Beckhoff-USA-Community.AdsGamepad.XAE Beckhoff-USA-Community.XAE.PLC.Lib.AdsGamepad Beckhoff-USA-Community.XAE.Documentation.AdsGamepad Beckhoff-USA-Community.XAE.TcComSource.AdsGamepad -y
+tcpkg uninstall Beckhoff-USA-Community.AdsGamepad.XAE Beckhoff-USA-Community.XAE.PLC.Lib.AdsGamepad Beckhoff-USA-Community.XAE.Documentation.AdsGamepad Beckhoff-USA-Community.XAE.TcCom.AdsGamepad -y
 ```
 
 The service keeps its appsettings.json so a later install finds the configuration again. Delete the ADS Gamepad folder under C:\Program Files\Beckhoff USA Community by hand if that should go too.

@@ -25,7 +25,9 @@ IF Gamepad.P_Buttons.bA_Button THEN
 END_IF
 ```
 
-Call Cycle() once per PLC cycle. It issues the ADS read for the controller block and, on the first cycles, a one time handshake read against the service info block. Everything else is properties on the function block.
+Call Cycle() once per PLC cycle. It issues the ADS read for the controller block and, on the first cycles, a one time handshake read against the service info block. Everything else is properties on the function block:
+
+![The library in use in a PLC project](Images/plc-library-usage.png)
 
 ## What the block offers
 

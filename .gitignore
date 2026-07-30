@@ -20,6 +20,8 @@
 _Boot/
 _CompileInfo/
 _Libraries/
+_products/
+_Deployment/
 *.xti.bak
 LineIDs.dbg
 LineIDs.dbg.bak

@@ -17,11 +17,11 @@ Xbox controllers earn their place where the Xbox form factor or the Adaptive Con
 Three ways to consume the data:
 
 * The **AdsGamepad PLC library**: one function block per controller with buttons, sticks, triggers and battery state as properties.
-* The **TcCOM module**: controller data as linkable process data with no PLC code involved, built from source in your own environment.
+* The **TcCOM module**: controller data as linkable process data with no PLC code involved, installed compiled and signed, ready to add to a project.
 * **Raw ADS reads** against the documented wire contract, from any ADS client you like.
 
 ## Where to start
 
-Install the service on the machine that has the controllers attached: on Windows through the [TwinCAT Package Manager](installation/windows.md), on a Beckhoff RT Linux controller with the [install script](installation/linux.md). Then add the PLC library to your project and read your first controller with a few lines, shown on the [PLC library page](plc-library.md).
+Install the service on the machine that has the controllers attached: on Windows through the [TwinCAT Package Manager](installation/windows.md), on a Beckhoff RT Linux controller with the [Debian package](installation/linux.md). Then add the PLC library to your project and read your first controller with a few lines, shown on the [PLC library page](plc-library.md). The [applications page](applications.md) collects patterns for jogging axes, driving movers and hand held control, and the safety thinking that belongs with them.
 
 This project is the continuation of the TC_XboxController project under a new home and a new name. If you come from the old service or the XboxControllerUtilities library, the [migration page](migration.md) walks you through the change.

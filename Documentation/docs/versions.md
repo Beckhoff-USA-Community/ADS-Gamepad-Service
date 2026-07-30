@@ -14,9 +14,9 @@ The wire format between the service and its consumers is treated as frozen. Addi
 | 2.5.0 | 1.3 | Extended controller data block; read it with library 2.1.0 or newer |
 | 2.6.0 | 1.4 | Battery detail in the extended block, verified against a full charge cycle; read it with library 2.2.1. First release with a Debian package for RT Linux |
 | 2.7.0 | 1.4 | DualSense over Bluetooth on Windows; the wire contract is unchanged |
-| 2.8.0 | 1.4 | DualSense over Bluetooth on Linux, for kernels that include the Bluetooth stack; the extended block report counter now also moves on Bluetooth connections; the wire contract is unchanged |
+| 2.8.0 | 1.4 | DualSense over Bluetooth on Linux, for kernels that include the Bluetooth stack; the extended block report counter now also moves on Bluetooth connections; the engineering workload now installs the compiled TcCOM module; the wire contract is unchanged |
 
-Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. AdsGamepad 2.1.0 adds the extended block support and works against any 2.x service; against a service older than 2.5.0 the extended data simply reads zero. AdsGamepad 2.2.1 adds P_Ext_Battery for the battery fields a 2.6.0 or newer service fills. TcCOM module versions are independent; the module reads the same contract. Any 2.x service serves any consumer, since the controller block never changed shape.
+Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. AdsGamepad 2.1.0 adds the extended block support and works against any 2.x service; against a service older than 2.5.0 the extended data simply reads zero. AdsGamepad 2.2.1 adds P_Ext_Battery for the battery fields a 2.6.0 or newer service fills. TcCOM module versions are independent; the module reads the same contract, and the [TcCOM page](tccom.md) holds the module version table. Any 2.x service serves any consumer, since the controller block never changed shape.
 
 ## The controller block
 

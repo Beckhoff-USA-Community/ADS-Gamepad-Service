@@ -2,9 +2,9 @@
 
 This directory holds a TwinCAT C++ module (TcCOM) that reads gamepad data from the ADS Gamepad Service and exposes it as process data. You add an instance to your TwinCAT project, assign it to a task, and link its variables like any other process data, with no PLC code involved. The module polls the service over ADS (AMS port 25733) once per task cycle and zeroes all outputs when the service stops answering.
 
-## Source only
+## Compiled module or source
 
-The module is distributed as source only. You build and sign it yourself. TwinCAT loads a C++ module, a TMX file, on Windows and TwinCAT/BSD only when it is signed with a certificate the target trusts, and there is no way to sign someone else's finished binary. Building from source is therefore not a workaround, it is the only path.
+The engineering workload installs the module compiled and signed into the TwinCAT module repository, ready to add to a project, with builds for TwinCAT RT x86, TwinCAT RT x64 and TwinCAT OS x64. This directory is for everyone else: audit the code, extend it, or build for a platform the packages do not cover. TwinCAT loads a C++ module, a TMX file, on Windows only when it is signed with a certificate the target trusts, so a self built module must be signed with your own TwinCAT user certificate.
 
 ## Requirements
 
@@ -15,7 +15,7 @@ The module is distributed as source only. You build and sign it yourself. TwinCA
 
 ## Building
 
-* Open Gamepad_TcCOM.slnx from the project folder, tccom/Gamepad_TcCOM in this repository. An installed copy from the source package lives under C:\Program Files\Beckhoff USA Community\ADS Gamepad\TcCOM and must be copied to a writable folder first.
+* Clone the repository and open Gamepad_TcCOM.slnx from the project folder, tccom/Gamepad_TcCOM.
 * Run the TwinCAT TMC Code Generator once on the ADS_Gamepad project.
 * Build for the target platform.
 
