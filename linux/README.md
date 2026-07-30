@@ -24,9 +24,9 @@ as on Windows.
 
 ## Install from the Debian package
 
-The simplest install is the Debian package. Every release build produces it
-as a workflow artifact named debian-package, and it can be built locally on
-any Linux machine, from the repository root:
+The simplest install is the Debian package, attached to each release on the
+GitHub Releases page of the repository. It can also be built locally on any
+Linux machine, from the repository root:
 
 ```
 dotnet publish src/AdsGamepadService -c Release -r linux-x64 --self-contained -o linux/publish

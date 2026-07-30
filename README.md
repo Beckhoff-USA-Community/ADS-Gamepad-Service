@@ -33,7 +33,7 @@ If adding the feed fails, confirm the token is the classic type (it starts with 
 
 ## Installing on Beckhoff RT Linux
 
-The service ships as a Debian package; every release build produces it as a workflow artifact named debian-package, and it can be built locally with two commands. Copy the package to the target and install it with apt:
+The service ships as a Debian package, attached to each release on the Releases page of this repository. Download it, copy it to the target, and install it with apt:
 
 ```
 sudo apt install ./ads-gamepad-service_*_amd64.deb
