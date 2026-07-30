@@ -39,6 +39,10 @@ Call Cycle() once per PLC cycle. It issues the ADS read for the controller block
 
 With a DualSense in the slot the values arrive in the same ranges and on the same properties: Cross, Circle, Square and Triangle map onto A, B, X and Y, Create onto Back and Options onto Start.
 
+## Watch the connected state
+
+When a pad disconnects, whatever the reason, the service zeroes every input and clears the connected bit, and the properties read zero. That fail safe stops motion, but only your program knows what the machine should do next: hold, alarm, or hand control elsewhere. Check P_Status.bConnected every cycle and treat a drop as an event, especially with a wireless pad, where sleep, a drained battery and a radio drop all arrive the same way. Programs reading the extended block can additionally watch P_Sequence: a value that stops moving while the pad claims to be connected means the input stream is stuck.
+
 ## Failure behavior
 
 On a failed ADS read the block zeroes its whole input image, and the property getters return zeros while the controller is not connected. A lost service, a pulled cable or a crashed machine therefore reads as a released controller, never as stale commands. Check P_Status to tell a released controller from a missing one.

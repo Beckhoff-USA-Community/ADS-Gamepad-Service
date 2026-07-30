@@ -41,6 +41,13 @@ namespace AdsGamepadService.Input
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool WriteFile(SafeFileHandle handle, byte[] buffer, uint bytesToWrite, out uint bytesWritten, nint overlapped);
 
+        /* Reads a feature report; buffer[0] names the report id on the way
+           in. The HID functions return a one byte BOOLEAN, not the four byte
+           BOOL of the kernel32 functions above. */
+        [LibraryImport("hid.dll")]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal static partial bool HidD_GetFeature(SafeFileHandle handle, [Out] byte[] buffer, uint bufferLength);
+
         /* Lists the device interface paths of every HID device currently
            present. The size can grow between the two calls when a device
            arrives at exactly the wrong moment, so the sequence retries. */

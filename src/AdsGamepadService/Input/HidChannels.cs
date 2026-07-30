@@ -15,6 +15,14 @@ namespace AdsGamepadService.Input
 
         // Best effort; a lost write on a disconnecting pad is acceptable
         void WriteReport(byte[] report);
+
+        /* TRUE when the pad is reached over Bluetooth, where the report
+           framing differs from USB. */
+        bool IsBluetooth { get; }
+
+        /* Reads a feature report; buffer[0] names the report id. Returns
+           FALSE when the transport does not support it or the read fails. */
+        bool TryReadFeature(byte[] buffer);
     }
 
     /* Windows: raw HID through two separate synchronous handles. On a single
@@ -27,32 +35,48 @@ namespace AdsGamepadService.Input
         private readonly SafeFileHandle _write;
         private readonly object _writeSync = new();
 
-        private WindowsHidChannel(SafeFileHandle read, SafeFileHandle write)
+        private WindowsHidChannel(SafeFileHandle read, SafeFileHandle write, bool isBluetooth)
         {
             _read = read;
             _write = write;
+            IsBluetooth = isBluetooth;
         }
 
-        /* Only the gamepad collection on USB interface three of a real pad
-           is accepted. A Bluetooth DualSense enumerates with a different
-           path shape and never matches the filter, and other matches would
-           be wrappers or clones with unverified reports. */
-        internal static WindowsHidChannel? Open(string vidPidMatch)
+        public bool IsBluetooth { get; }
+
+        /* USB is preferred: only the gamepad collection on USB interface
+           three of a real pad is accepted there, other USB matches would be
+           wrappers or clones with unverified reports. Without a USB pad the
+           Bluetooth HID node is taken instead; its path carries the vendor
+           and product id in the Bluetooth path shape, so each transport has
+           its own filter and neither can match the other. */
+        internal static WindowsHidChannel? Open(string usbMatch, string bluetoothMatch, bool preferBluetooth = false)
         {
-            string? path = null;
+            string? usbPath = null;
+            string? btPath = null;
             foreach (string candidate in HidNative.ListHidInterfacePaths())
             {
-                if (candidate.Contains(vidPidMatch, StringComparison.OrdinalIgnoreCase) &&
+                if (usbPath is null &&
+                    candidate.Contains(usbMatch, StringComparison.OrdinalIgnoreCase) &&
                     candidate.Contains("mi_03", StringComparison.OrdinalIgnoreCase))
                 {
-                    path = candidate;
-                    break;
+                    usbPath = candidate;
+                }
+                else if (btPath is null &&
+                    candidate.Contains(bluetoothMatch, StringComparison.OrdinalIgnoreCase))
+                {
+                    btPath = candidate;
                 }
             }
+            /* The caller flips the preference after detecting a frozen USB
+               stream, the signature of a pad whose live session is the
+               Bluetooth one. */
+            string? path = preferBluetooth ? btPath ?? usbPath : usbPath ?? btPath;
             if (path is null)
             {
                 return null;
             }
+            bool isBluetooth = path == btPath;
 
             SafeFileHandle read = HidNative.CreateFile(
                 path, HidNative.GENERIC_READ,
@@ -63,8 +87,11 @@ namespace AdsGamepadService.Input
                 read.Dispose();
                 return null;
             }
+            /* The write handle also carries the feature report reads used by
+               the Bluetooth mode switch, and the HID feature calls want read
+               access on the handle they run on. */
             SafeFileHandle write = HidNative.CreateFile(
-                path, HidNative.GENERIC_WRITE,
+                path, HidNative.GENERIC_READ | HidNative.GENERIC_WRITE,
                 HidNative.FILE_SHARE_READ | HidNative.FILE_SHARE_WRITE,
                 0, HidNative.OPEN_EXISTING, 0, 0);
             if (write.IsInvalid)
@@ -73,7 +100,26 @@ namespace AdsGamepadService.Input
                 read.Dispose();
                 return null;
             }
-            return new WindowsHidChannel(read, write);
+            return new WindowsHidChannel(read, write, isBluetooth);
+        }
+
+        public bool TryReadFeature(byte[] buffer)
+        {
+            lock (_writeSync)
+            {
+                if (_write.IsInvalid || _write.IsClosed)
+                {
+                    return false;
+                }
+                try
+                {
+                    return HidNative.HidD_GetFeature(_write, buffer, (uint)buffer.Length);
+                }
+                catch (ObjectDisposedException)
+                {
+                    return false;
+                }
+            }
         }
 
         public int ReadReport(byte[] buffer)
@@ -110,13 +156,14 @@ namespace AdsGamepadService.Input
             }
         }
 
+        /* Deliberately does not take the write lock: closing the handle is
+           how a pending synchronous write on a dying Bluetooth link gets
+           cancelled, and waiting for it here would stall shutdown for the
+           link timeout instead. The writers catch the resulting exception. */
         public void Dispose()
         {
             _read.Dispose();
-            lock (_writeSync)
-            {
-                _write.Dispose();
-            }
+            _write.Dispose();
         }
     }
 
@@ -129,6 +176,15 @@ namespace AdsGamepadService.Input
         private readonly FileStream _read;
         private readonly FileStream _write;
         private readonly object _writeSync = new();
+
+        /* The Linux side stays USB only until the kernel side of Bluetooth
+           exists on the target platform. */
+        public bool IsBluetooth => false;
+
+        public bool TryReadFeature(byte[] buffer)
+        {
+            return false;
+        }
 
         private LinuxHidChannel(FileStream read, FileStream write)
         {

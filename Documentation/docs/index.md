@@ -4,9 +4,15 @@ ADS Gamepad Service brings game controllers into TwinCAT projects as plain proce
 
 ## What it supports
 
-* Xbox controllers through the Microsoft XInput interface, on Windows.
-* The PlayStation 5 DualSense controller over USB, on Windows and on Beckhoff RT Linux.
+* The PlayStation 5 DualSense controller, on Windows over USB or Bluetooth and on Beckhoff RT Linux over USB, including its battery state, touchpad and motion sensors.
+* Xbox controllers through the Microsoft XInput interface, on Windows. Wireless operation works through the official Xbox Wireless Adapter.
 * Rumble commands from the PLC back to the controller.
+
+## Choosing a controller
+
+Both families work, and a program written against the library or the TcCOM module behaves the same whichever pad fills a slot. When you get to pick, pick the DualSense. It reports a real battery percentage and charging state, it serves extra data such as the touchpad and motion sensors, it needs nothing beyond its USB cable, and it reconnects on its own after cable pulls and reboots. It is also the only controller the Linux side supports.
+
+Xbox controllers earn their place where the Xbox form factor or the Adaptive Controller family is the requirement. Plan for their habits: wireless operation needs the official Xbox Wireless Adapter, a pad goes to sleep and wants its Xbox button pressed after a machine reboot, and the battery information in the classic status word is not reliable. A program using a wireless pad of any kind should watch the connected state every cycle; the service zeroes all inputs the moment a pad drops, and the program is the right place to decide what the machine does about it.
 
 Three ways to consume the data:
 

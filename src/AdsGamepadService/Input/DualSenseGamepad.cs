@@ -17,8 +17,14 @@ namespace AdsGamepadService.Input
     internal sealed class DualSenseGamepad : IGamepad, IExtendedGamepad, IDisposable
     {
         private const string WindowsPathMatch = "vid_054c&pid_0ce6";
+        // The Bluetooth HID node carries the ids in this path shape instead
+        private const string WindowsBtPathMatch = "_vid&0002054c_pid&0ce6";
         // Bus 0003 is USB; the prefix excludes Bluetooth pads like mi_03 does on Windows
         private const string LinuxHidIdMatch = "0003:0000054C:00000CE6";
+        // Feature report 0x05 holds calibration; reading it also switches a
+        // Bluetooth pad from its simplified reports to the full 0x31 frames
+        private const byte BtModeSwitchFeatureId = 0x05;
+        private const int BtModeSwitchFeatureLength = 41;
         private const int ReconnectDelayMs = 1000;
         private const long StaleReportMs = 500;
         private const long FrozenControlsWarnMs = 10000;
@@ -29,14 +35,23 @@ namespace AdsGamepadService.Input
 
         private readonly ILogger _logger;
         private readonly Thread _reader;
+        private readonly Thread _writer;
         private readonly object _channelSync = new();
+        private readonly object _rumbleSync = new();
+        private readonly AutoResetEvent _rumbleSignal = new(false);
         private volatile bool _stopping;
         private volatile Snapshot? _latest;
         private IHidChannel? _channel;
+        private (byte Left, byte Right)? _pendingRumble;
+        /* Set when a frozen USB stream suggests the pad is alive on its
+           Bluetooth side; the next open then tries Bluetooth first. */
+        private volatile bool _retryPreferBluetooth;
+        private volatile bool _bluetoothTransport;
 
         private DualSenseState _current;
         private bool _connected;
         private uint _extSequence;
+        private byte _btOutputSequence;
 
         public DualSenseGamepad(int controllerNumber, ILogger logger)
         {
@@ -48,6 +63,16 @@ namespace AdsGamepadService.Input
                 Name = $"DualSense slot {controllerNumber}",
             };
             _reader.Start();
+            /* Rumble goes through its own thread so the ADS write callback
+               never waits on the transport. A Bluetooth output report can
+               pend for seconds while a link dies, and the callback runs
+               under the server lock every slot's reads share. */
+            _writer = new Thread(WriteLoop)
+            {
+                IsBackground = true,
+                Name = $"DualSense rumble slot {controllerNumber}",
+            };
+            _writer.Start();
         }
 
         public int ControllerNumber { get; }
@@ -103,12 +128,52 @@ namespace AdsGamepadService.Input
 
         public ushort ButtonBits => _current.WireButtons;
 
-        /* The pad runs from the USB cable, so the classic States word
-           reports a wired pad with a full level by design and never
-           changes; the real charge numbers live in the extended block. */
-        public GamepadBatteryType BatteryType => _connected ? GamepadBatteryType.Wired : GamepadBatteryType.None;
+        /* Over USB the classic States word reports a wired pad with a full
+           level, unchanged since the backend shipped, and the real numbers
+           live in the extended block. Over Bluetooth that constant would
+           hide a draining battery from every v1 program, so the level is
+           mapped from the real charge instead; the type reads unknown
+           because the enum predates lithium pads. */
+        public GamepadBatteryType BatteryType
+        {
+            get
+            {
+                if (!_connected)
+                {
+                    return GamepadBatteryType.None;
+                }
+                return _bluetoothTransport ? GamepadBatteryType.Unknown : GamepadBatteryType.Wired;
+            }
+        }
 
-        public GamepadBatteryLevel BatteryLevel => _connected ? GamepadBatteryLevel.Full : GamepadBatteryLevel.None;
+        public GamepadBatteryLevel BatteryLevel
+        {
+            get
+            {
+                if (!_connected)
+                {
+                    return GamepadBatteryLevel.None;
+                }
+                if (!_bluetoothTransport)
+                {
+                    return GamepadBatteryLevel.Full;
+                }
+                if (!_current.BatteryKnown ||
+                    !DualSenseReport.TryDecodeBattery(_current.BatteryRaw, out byte percent, out _, out _))
+                {
+                    return GamepadBatteryLevel.None;
+                }
+                return MapBatteryLevel(percent);
+            }
+        }
+
+        internal static GamepadBatteryLevel MapBatteryLevel(byte percent)
+        {
+            if (percent >= 85) return GamepadBatteryLevel.Full;
+            if (percent >= 45) return GamepadBatteryLevel.Medium;
+            if (percent >= 15) return GamepadBatteryLevel.Low;
+            return GamepadBatteryLevel.Empty;
+        }
 
         /* Extended data for the contract v1.3 block. The sequence counter is
            the pad's own report counter widened service side, so a PLC
@@ -152,6 +217,9 @@ namespace AdsGamepadService.Input
             _connected = true;
         }
 
+        /* Never blocks: the newest command wins and the writer thread does
+           the transport work. Dropping a superseded rumble value is correct,
+           only the latest intensity matters. */
         public void Rumble(float leftMotorPercent, float rightMotorPercent)
         {
             if (!_connected)
@@ -159,17 +227,64 @@ namespace AdsGamepadService.Input
                 return;
             }
 
-            /* Output report 0x02: flag byte 1 selects the classic rumble
-               path, byte 3 is the right motor, byte 4 the left motor. */
-            byte[] report = new byte[OutputReportLength];
-            report[0] = UsbOutputReportId;
-            report[1] = 0x03;
-            report[3] = GamepadMath.RumbleMotorByte(rightMotorPercent);
-            report[4] = GamepadMath.RumbleMotorByte(leftMotorPercent);
-
-            lock (_channelSync)
+            byte right = GamepadMath.RumbleMotorByte(rightMotorPercent);
+            byte left = GamepadMath.RumbleMotorByte(leftMotorPercent);
+            lock (_rumbleSync)
             {
-                _channel?.WriteReport(report);
+                _pendingRumble = (left, right);
+            }
+            _rumbleSignal.Set();
+        }
+
+        private void WriteLoop()
+        {
+            while (!_stopping)
+            {
+                _rumbleSignal.WaitOne(500);
+                if (_stopping)
+                {
+                    return;
+                }
+                (byte Left, byte Right)? pending;
+                lock (_rumbleSync)
+                {
+                    pending = _pendingRumble;
+                    _pendingRumble = null;
+                }
+                if (pending is null)
+                {
+                    continue;
+                }
+
+                IHidChannel? channel;
+                lock (_channelSync)
+                {
+                    channel = _channel;
+                }
+                if (channel is null)
+                {
+                    continue;
+                }
+
+                byte[] report;
+                if (channel.IsBluetooth)
+                {
+                    report = DualSenseReport.BuildBtRumbleReport(_btOutputSequence++, pending.Value.Right, pending.Value.Left);
+                }
+                else
+                {
+                    /* Output report 0x02: flag byte 1 selects the classic
+                       rumble path, byte 3 the right motor, byte 4 the left. */
+                    report = new byte[OutputReportLength];
+                    report[0] = UsbOutputReportId;
+                    report[1] = 0x03;
+                    report[3] = pending.Value.Right;
+                    report[4] = pending.Value.Left;
+                }
+                /* Outside every lock: a pending Bluetooth write on a dying
+                   link stalls only this thread, and closing the channel
+                   cancels it. */
+                channel.WriteReport(report);
             }
         }
 
@@ -180,8 +295,11 @@ namespace AdsGamepadService.Input
         public void Dispose()
         {
             _stopping = true;
+            _rumbleSignal.Set();
             CloseChannel();
             _reader.Join(TimeSpan.FromSeconds(2));
+            _writer.Join(TimeSpan.FromSeconds(2));
+            _rumbleSignal.Dispose();
         }
 
         private void CloseChannel()
@@ -193,13 +311,35 @@ namespace AdsGamepadService.Input
             }
         }
 
-        private static IHidChannel? OpenChannel()
+        /* A Bluetooth pad must be switched to its full report mode before the
+           reports carry anything beyond sticks; a channel where the switch
+           fails is treated as a failed open and retried. */
+        private IHidChannel? OpenChannel()
         {
+            IHidChannel? channel;
             if (OperatingSystem.IsWindows())
             {
-                return WindowsHidChannel.Open(WindowsPathMatch);
+                bool preferBluetooth = _retryPreferBluetooth;
+                _retryPreferBluetooth = false;
+                channel = WindowsHidChannel.Open(WindowsPathMatch, WindowsBtPathMatch, preferBluetooth);
             }
-            return LinuxHidChannel.Open(LinuxHidIdMatch);
+            else
+            {
+                channel = LinuxHidChannel.Open(LinuxHidIdMatch);
+            }
+            if (channel is not null && channel.IsBluetooth && !RequestFullReports(channel))
+            {
+                channel.Dispose();
+                return null;
+            }
+            return channel;
+        }
+
+        private static bool RequestFullReports(IHidChannel channel)
+        {
+            byte[] feature = new byte[BtModeSwitchFeatureLength];
+            feature[0] = BtModeSwitchFeatureId;
+            return channel.TryReadFeature(feature);
         }
 
         private void ReadLoop()
@@ -216,8 +356,11 @@ namespace AdsGamepadService.Input
                 {
                     _channel = channel;
                 }
+                _bluetoothTransport = channel.IsBluetooth;
 
-                _logger.LogInformation("DualSense connected on slot {Slot}.", ControllerNumber);
+                _logger.LogInformation(
+                    "DualSense connected on slot {Slot} over {Transport}.",
+                    ControllerNumber, channel.IsBluetooth ? "Bluetooth" : "USB");
                 try
                 {
                     ReadReports(channel);
@@ -250,7 +393,10 @@ namespace AdsGamepadService.Input
 
         private void ReadReports(IHidChannel channel)
         {
-            byte[] buffer = new byte[DualSenseReport.UsbInputReportLength];
+            byte[] buffer = new byte[DualSenseReport.BtInputReportLength];
+            /* Field offsets shift by one on Bluetooth, where a link sequence
+               byte follows the report id. */
+            int o = channel.IsBluetooth ? 1 : 0;
             /* Control bytes are 1 to 6 and 8 to 10. Byte 7 is a sequence
                counter that changes with every report, so it must stay out of
                the comparison or the frozen state could never be detected. */
@@ -267,6 +413,7 @@ namespace AdsGamepadService.Input
             uint wideSequence = 0;
             byte lastSequence = 0;
             bool sequenceSeeded = false;
+            int simplifiedFrames = 0;
 
             while (!_stopping)
             {
@@ -275,10 +422,27 @@ namespace AdsGamepadService.Input
                 {
                     return;
                 }
-                if (read == 0 || !DualSenseReport.TryParse(buffer.AsSpan(0, read), out DualSenseState state))
+                if (read == 0)
                 {
                     continue;
                 }
+                /* A Bluetooth pad that fell back to its simplified reports,
+                   for example after a link drop, carries almost no data in
+                   them; ask for the full frames again instead of parsing
+                   them, spaced out so a stubborn pad cannot busy loop us. */
+                if (!DualSenseReport.ShouldParseFrame(channel.IsBluetooth, buffer[0]))
+                {
+                    if (simplifiedFrames++ % 250 == 0)
+                    {
+                        RequestFullReports(channel);
+                    }
+                    continue;
+                }
+                if (!DualSenseReport.TryParse(buffer.AsSpan(0, read), out DualSenseState state))
+                {
+                    continue;
+                }
+                simplifiedFrames = 0;
 
                 if (sequenceSeeded)
                 {
@@ -293,8 +457,8 @@ namespace AdsGamepadService.Input
 
                 _latest = new Snapshot(state, wideSequence, Environment.TickCount64);
 
-                buffer.AsSpan(1, 6).CopyTo(controls);
-                buffer.AsSpan(8, 3).CopyTo(controls[6..]);
+                buffer.AsSpan(1 + o, 6).CopyTo(controls);
+                buffer.AsSpan(8 + o, 3).CopyTo(controls[6..]);
                 if (!controls.SequenceEqual(lastControls))
                 {
                     controls.CopyTo(lastControls);
@@ -304,6 +468,19 @@ namespace AdsGamepadService.Input
                 else if (!frozenWarned && Environment.TickCount64 - lastControlChange > FrozenControlsWarnMs)
                 {
                     frozenWarned = true;
+                    /* Frozen controls on a USB stream usually mean the pad
+                       holds a Bluetooth session, possibly with this very
+                       machine now that Bluetooth is a supported transport.
+                       Ending the session makes the next open try Bluetooth
+                       first, which heals the local case on its own. */
+                    if (!channel.IsBluetooth && OperatingSystem.IsWindows())
+                    {
+                        _logger.LogWarning(
+                            "DualSense on slot {Slot} streams USB reports but its controls are frozen, which usually means an active Bluetooth session. Trying Bluetooth.",
+                            ControllerNumber);
+                        _retryPreferBluetooth = true;
+                        return;
+                    }
                     _logger.LogWarning(
                         "DualSense on slot {Slot} streams reports but its controls have not changed for {Seconds} seconds. " +
                         "If the pad does not react, unpair it from every Bluetooth host and reconnect the cable.",

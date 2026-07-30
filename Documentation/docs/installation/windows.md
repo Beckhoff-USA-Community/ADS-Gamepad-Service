@@ -43,3 +43,14 @@ tcpkg uninstall Beckhoff-USA-Community.AdsGamepad.XAE Beckhoff-USA-Community.XAE
 ```
 
 The service keeps its appsettings.json so a later install finds the configuration again. Delete the ADS Gamepad folder under C:\Program Files\Beckhoff USA Community by hand if that should go too.
+
+## Wireless Xbox controllers
+
+Wireless Xbox controllers connect through the official Xbox Wireless Adapter, a small USB dongle from Microsoft. On a machine with internet access Windows fetches its driver on first plug in. Industrial machines are usually offline, so fetch the driver package for the Xbox Wireless Adapter from the Microsoft Update Catalog on any connected PC, copy it over, extract the .cab file, and install it from an administrator PowerShell:
+
+```powershell
+expand -F:* .\<driver package>.cab C:\Temp\XboxAdapterDriver
+pnputil /add-driver C:\Temp\XboxAdapterDriver\*.inf /install
+```
+
+Then press the pairing button on the adapter and hold the sync button on the controller until its Xbox button stays lit. The pad appears as a normal XInput controller and the service needs no configuration change. Pairing Xbox controllers with generic Bluetooth adapters proved unreliable in testing; the official adapter is the supported path.

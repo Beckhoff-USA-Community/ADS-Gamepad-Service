@@ -556,7 +556,7 @@
 								<AreaNo AreaType="OutputSrc" CreateSymbols="true">2</AreaNo>
 								<Name>ExtOutputs</Name>
 								<ContextId>1</ContextId>
-								<ByteSize>36</ByteSize>
+								<ByteSize>40</ByteSize>
 								<Symbol>
 									<Name>bExtDataPresent</Name>
 									<Comment><![CDATA[TRUE while the service supplies extended data for this slot. All values below read zero while it is FALSE.]]></Comment>
@@ -654,6 +654,34 @@
 									<BitSize>32</BitSize>
 									<BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
 									<BitOffs>256</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nBatteryPercent</Name>
+									<Comment><![CDATA[Battery charge from 0 to 100. Valid while bBatteryValid is TRUE.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+									<BitOffs>288</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>bBatteryCharging</Name>
+									<Comment><![CDATA[TRUE while the battery is charging.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+									<BitOffs>296</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>bBatteryFull</Name>
+									<Comment><![CDATA[TRUE while the battery is fully charged.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+									<BitOffs>304</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>bBatteryValid</Name>
+									<Comment><![CDATA[TRUE while the service supplies battery data. Services older than 2.6.0 leave the battery values zero.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+									<BitOffs>312</BitOffs>
 								</Symbol>
 							</DataArea>
 						</DataAreas>
@@ -1033,7 +1061,7 @@
 								<AreaNo AreaType="OutputSrc" CreateSymbols="true">2</AreaNo>
 								<Name>ExtOutputs</Name>
 								<ContextId>1</ContextId>
-								<ByteSize>36</ByteSize>
+								<ByteSize>40</ByteSize>
 								<Symbol>
 									<Name>bExtDataPresent</Name>
 									<Comment><![CDATA[TRUE while the service supplies extended data for this slot. All values below read zero while it is FALSE.]]></Comment>
@@ -1131,6 +1159,34 @@
 									<BitSize>32</BitSize>
 									<BaseType GUID="{18071995-0000-0000-0000-000000000008}">UDINT</BaseType>
 									<BitOffs>256</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>nBatteryPercent</Name>
+									<Comment><![CDATA[Battery charge from 0 to 100. Valid while bBatteryValid is TRUE.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+									<BitOffs>288</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>bBatteryCharging</Name>
+									<Comment><![CDATA[TRUE while the battery is charging.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+									<BitOffs>296</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>bBatteryFull</Name>
+									<Comment><![CDATA[TRUE while the battery is fully charged.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+									<BitOffs>304</BitOffs>
+								</Symbol>
+								<Symbol>
+									<Name>bBatteryValid</Name>
+									<Comment><![CDATA[TRUE while the service supplies battery data. Services older than 2.6.0 leave the battery values zero.]]></Comment>
+									<BitSize>8</BitSize>
+									<BaseType GUID="{18071995-0000-0000-0000-000000000030}">BOOL</BaseType>
+									<BitOffs>312</BitOffs>
 								</Symbol>
 							</DataArea>
 						</DataAreas>

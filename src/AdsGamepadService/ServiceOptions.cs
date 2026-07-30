@@ -24,8 +24,9 @@ namespace AdsGamepadService
         /* Input backend per controller slot, in slot order. Missing entries
            default to XInput, the behavior of every release before 2.2.0.
            XInput polls the pad with the same number as the slot, so slot one
-           reads XInput index zero. DualSense reads one wired PlayStation 5
-           controller over raw HID; at most one slot can use it, since the
+           reads XInput index zero. DualSense reads one PlayStation 5
+           controller over raw HID, on Windows over USB or Bluetooth with
+           the cable preferred; at most one slot can use it, since the
            service opens a single pad. A slot never changes its backend at
            runtime, only through this setting. */
         public string[]? SlotSources { get; set; }
@@ -65,7 +66,7 @@ namespace AdsGamepadService
                 }
                 if (dualSenseSlots > 1)
                 {
-                    errors.Add("Only one slot can use the DualSense backend, the service reads a single wired pad.");
+                    errors.Add("Only one slot can use the DualSense backend, the service reads a single pad.");
                 }
             }
             return errors.ToArray();

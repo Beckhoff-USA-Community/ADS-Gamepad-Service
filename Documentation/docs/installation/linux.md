@@ -1,6 +1,8 @@
 # Installation on Beckhoff RT Linux
 
-The service runs on Beckhoff RT Linux as a systemd service and reads a wired PlayStation 5 DualSense controller. Xbox controllers are not supported on Linux: the Beckhoff kernel does not include the driver they need. The ADS side is identical to Windows, so the PLC library and the TcCOM module work unchanged.
+The service runs on Beckhoff RT Linux as a systemd service and reads a wired PlayStation 5 DualSense controller. The ADS side is identical to Windows, so the PLC library and the TcCOM module work unchanged.
+
+Linux is DualSense only, and the reason is worth understanding when you plan a machine. The DualSense speaks plain USB HID, a standard the kernel serves out of the box, so the service reads it directly with no driver at all. Xbox controllers speak a proprietary USB protocol that needs a kernel driver, and Bluetooth of any kind needs the kernel Bluetooth stack; the Beckhoff kernel ships with neither, and a service alone cannot replace kernel support. On Linux, plan on the DualSense.
 
 ## Requirements
 

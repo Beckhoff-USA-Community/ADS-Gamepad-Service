@@ -26,10 +26,53 @@ namespace AdsGamepadService.Input
         byte BatteryRaw = 0,
         bool BatteryKnown = false);
 
+    /* Standard CRC32 as the DualSense uses on its Bluetooth reports: the
+       reflected 0xEDB88320 polynomial, seeded with one transport byte before
+       the payload. The pad rejects Bluetooth output reports with a wrong
+       checksum, and the reader drops damaged input frames the same way. */
+    internal static class DualSenseCrc
+    {
+        private static readonly uint[] Table = BuildTable();
+
+        // Transport prefix bytes, one per HID report direction
+        internal const byte InputPrefix = 0xA1;
+        internal const byte OutputPrefix = 0xA2;
+
+        private static uint[] BuildTable()
+        {
+            var table = new uint[256];
+            for (uint i = 0; i < 256; i++)
+            {
+                uint c = i;
+                for (int k = 0; k < 8; k++)
+                {
+                    c = (c & 1) != 0 ? 0xEDB88320u ^ (c >> 1) : c >> 1;
+                }
+                table[i] = c;
+            }
+            return table;
+        }
+
+        internal static uint Compute(byte prefix, ReadOnlySpan<byte> payload)
+        {
+            uint crc = 0xFFFFFFFFu;
+            crc = Table[(crc ^ prefix) & 0xFF] ^ (crc >> 8);
+            foreach (byte b in payload)
+            {
+                crc = Table[(crc ^ b) & 0xFF] ^ (crc >> 8);
+            }
+            return crc ^ 0xFFFFFFFFu;
+        }
+    }
+
     internal static class DualSenseReport
     {
         internal const byte UsbInputReportId = 0x01;
         internal const int UsbInputReportLength = 64;
+        internal const byte BtInputReportId = 0x31;
+        internal const int BtInputReportLength = 78;
+        internal const int BtOutputReportLength = 78;
+        private const byte BtOutputTag = 0x10;
 
         /* Wire button bits, contract v1 layout. Bits 0 to 9 and 12 to 15
            follow the XInput meaning. Bits 10 and 11 were reserved through
@@ -104,23 +147,56 @@ namespace AdsGamepadService.Input
             0,
         };
 
+        /* Accepts the USB input report 0x01 and the Bluetooth full mode
+           report 0x31. The Bluetooth frame carries one link sequence byte
+           after the report id and then the USB payload unchanged, so both
+           forms parse through the same field offsets shifted by one. A
+           Bluetooth frame with a wrong checksum parses as false and is
+           dropped. The simplified 0x01 form a Bluetooth pad sends before
+           the mode switch must never reach this parser: Windows pads it to
+           the full 78 byte report length, so it would pass a length check
+           and parse here as a USB layout with wrong values. The reader
+           therefore gates Bluetooth frames by report id, and that gate is
+           load bearing. */
+        /* The reader's transport gate: on Bluetooth only full 0x31 frames
+           may reach TryParse, because Windows pads the simplified 0x01 form
+           to full length where it would wrongly parse as a USB layout. */
+        internal static bool ShouldParseFrame(bool isBluetooth, byte reportId)
+        {
+            return !isBluetooth || reportId == BtInputReportId;
+        }
+
         internal static bool TryParse(ReadOnlySpan<byte> report, out DualSenseState state)
         {
             state = default;
-            if (report.Length < 11 || report[0] != UsbInputReportId)
+            int o;
+            if (report.Length >= 11 && report[0] == UsbInputReportId)
+            {
+                o = 0;
+            }
+            else if (report.Length >= BtInputReportLength && report[0] == BtInputReportId)
+            {
+                uint expected = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(report.Slice(BtInputReportLength - 4, 4));
+                if (DualSenseCrc.Compute(DualSenseCrc.InputPrefix, report.Slice(0, BtInputReportLength - 4)) != expected)
+                {
+                    return false;
+                }
+                o = 1;
+            }
+            else
             {
                 return false;
             }
 
-            ushort buttons = HatToDPad[Math.Min(report[8] & 0x0F, 8)];
+            ushort buttons = HatToDPad[Math.Min(report[8 + o] & 0x0F, 8)];
 
-            byte face = (byte)(report[8] & 0xF0);
+            byte face = (byte)(report[8 + o] & 0xF0);
             if ((face & Cross) != 0) buttons |= WireA;
             if ((face & Circle) != 0) buttons |= WireB;
             if ((face & Square) != 0) buttons |= WireX;
             if ((face & Triangle) != 0) buttons |= WireY;
 
-            byte b9 = report[9];
+            byte b9 = report[9 + o];
             if ((b9 & L1) != 0) buttons |= WireLeftShoulder;
             if ((b9 & R1) != 0) buttons |= WireRightShoulder;
             if ((b9 & L3) != 0) buttons |= WireLeftThumb;
@@ -131,31 +207,31 @@ namespace AdsGamepadService.Input
             ushort extButtons = 0;
             short gyroX = 0, gyroY = 0, gyroZ = 0, accelX = 0, accelY = 0, accelZ = 0;
             GamepadTouchPoint touch0 = default, touch1 = default;
-            if (report.Length >= ExtendedReportLength)
+            if (report.Length >= ExtendedReportLength + o)
             {
-                byte b10 = report[10];
+                byte b10 = report[10 + o];
                 if ((b10 & Ps) != 0) extButtons |= ExtPs;
                 if ((b10 & Mute) != 0) extButtons |= ExtMute;
                 if ((b10 & TouchpadClick) != 0) extButtons |= ExtTouchpadClick;
 
-                gyroX = ReadInt16(report, 16);
-                gyroY = ReadInt16(report, 18);
-                gyroZ = ReadInt16(report, 20);
-                accelX = ReadInt16(report, 22);
-                accelY = ReadInt16(report, 24);
-                accelZ = ReadInt16(report, 26);
+                gyroX = ReadInt16(report, 16 + o);
+                gyroY = ReadInt16(report, 18 + o);
+                gyroZ = ReadInt16(report, 20 + o);
+                accelX = ReadInt16(report, 22 + o);
+                accelY = ReadInt16(report, 24 + o);
+                accelZ = ReadInt16(report, 26 + o);
 
-                touch0 = ParseTouchPoint(report.Slice(33, 4));
-                touch1 = ParseTouchPoint(report.Slice(37, 4));
+                touch0 = ParseTouchPoint(report.Slice(33 + o, 4));
+                touch1 = ParseTouchPoint(report.Slice(37 + o, 4));
             }
 
             state = new DualSenseState(
-                ThumbLX: AxisToThumb(report[1]),
-                ThumbLY: AxisToThumbInverted(report[2]),
-                ThumbRX: AxisToThumb(report[3]),
-                ThumbRY: AxisToThumbInverted(report[4]),
-                LeftTrigger: report[5],
-                RightTrigger: report[6],
+                ThumbLX: AxisToThumb(report[1 + o]),
+                ThumbLY: AxisToThumbInverted(report[2 + o]),
+                ThumbRX: AxisToThumb(report[3 + o]),
+                ThumbRY: AxisToThumbInverted(report[4 + o]),
+                LeftTrigger: report[5 + o],
+                RightTrigger: report[6 + o],
                 WireButtons: buttons,
                 ExtButtons: extButtons,
                 GyroX: gyroX,
@@ -166,10 +242,32 @@ namespace AdsGamepadService.Input
                 AccelZ: accelZ,
                 Touch0: touch0,
                 Touch1: touch1,
-                Sequence: report.Length >= ExtendedReportLength ? report[7] : (byte)0,
-                BatteryRaw: report.Length >= BatteryReportLength ? report[BatteryOffset] : (byte)0,
-                BatteryKnown: report.Length >= BatteryReportLength);
+                Sequence: report.Length >= ExtendedReportLength + o ? report[7 + o] : (byte)0,
+                BatteryRaw: report.Length >= BatteryReportLength + o ? report[BatteryOffset + o] : (byte)0,
+                BatteryKnown: report.Length >= BatteryReportLength + o);
             return true;
+        }
+
+        /* Builds the Bluetooth rumble report. The frame is the report id, a
+           rolling sequence in the upper nibble of the next byte, a fixed tag,
+           then the same payload the USB output report 0x02 carries after its
+           id, padded to length with the checksum in the last four bytes.
+           The pad ignores Bluetooth output reports with a wrong checksum. */
+        internal static byte[] BuildBtRumbleReport(byte sequence, byte rightMotor, byte leftMotor)
+        {
+            byte[] report = new byte[BtOutputReportLength];
+            report[0] = 0x31;
+            report[1] = (byte)((sequence & 0x0F) << 4);
+            report[2] = BtOutputTag;
+            report[3] = 0x03; // enable both classic rumble motors
+            report[5] = rightMotor;
+            report[6] = leftMotor;
+            uint crc = DualSenseCrc.Compute(DualSenseCrc.OutputPrefix, report.AsSpan(0, BtOutputReportLength - 4));
+            report[74] = (byte)crc;
+            report[75] = (byte)(crc >> 8);
+            report[76] = (byte)(crc >> 16);
+            report[77] = (byte)(crc >> 24);
+            return report;
         }
 
         /* Decodes the battery byte into the wire values of the extended
