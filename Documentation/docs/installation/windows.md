@@ -53,4 +53,14 @@ expand -F:* .\<driver package>.cab C:\Temp\XboxAdapterDriver
 pnputil /add-driver C:\Temp\XboxAdapterDriver\*.inf /install
 ```
 
-Then press the pairing button on the adapter and hold the sync button on the controller until its Xbox button stays lit. The pad appears as a normal XInput controller and the service needs no configuration change. Pairing Xbox controllers with generic Bluetooth adapters proved unreliable in testing; the official adapter is the supported path.
+Then press the pairing button on the adapter and hold the sync button on the controller until its Xbox button stays lit. The pad appears as a normal XInput controller and the service needs no configuration change. Xbox controllers failed to pair with Realtek based Bluetooth adapters in testing, including the adapter the next section recommends for the DualSense; the pairing handshake itself fails, so it is not a settings problem. The official adapter is the supported path.
+
+## Bluetooth for the DualSense
+
+A wireless DualSense connects over regular Bluetooth, but industrial PCs rarely include a Bluetooth radio, so most machines need a USB Bluetooth adapter first. The TP-Link UB500 is the adapter this project tests with. On a machine with internet access Windows fetches its driver on first plug in. On an offline machine, download the UB500 driver package from the TP-Link support site on any connected PC, copy it over, extract it, and install the driver from an administrator PowerShell:
+
+```powershell
+pnputil /add-driver C:\Temp\UB500Driver\*.inf /subdirs /install
+```
+
+Then plug in the adapter, put the controller into pairing mode by holding its Create and PS buttons until the light bar flashes, and pair it under the Windows Bluetooth settings. The service picks the pad up with no configuration change; the service page describes the pairing behavior in detail. This adapter serves the DualSense only. Xbox controllers do not pair with it, as described above.

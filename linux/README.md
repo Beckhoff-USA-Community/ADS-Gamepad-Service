@@ -31,7 +31,7 @@ sh linux/build-deb.sh
 Copy the package to the target and install it:
 
 ```
-sudo apt install ./ads-gamepad-service_2.4.0_amd64.deb
+sudo apt install ./ads-gamepad-service_*_amd64.deb
 ```
 
 The package performs the same setup as the install script below: it creates

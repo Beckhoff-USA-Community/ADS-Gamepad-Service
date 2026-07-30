@@ -12,7 +12,7 @@ The wire format between the service and its consumers is treated as frozen. Addi
 | 2.3.0 | 1.2 | Beckhoff RT Linux support |
 | 2.4.0 | 1.2 | Rewritten documentation site; the service itself is unchanged |
 | 2.5.0 | 1.3 | Extended controller data block; read it with library 2.1.0 or newer |
-| 2.6.0 | 1.4 | Battery detail in the extended block, verified against a full charge cycle; read it with library 2.2.1 |
+| 2.6.0 | 1.4 | Battery detail in the extended block, verified against a full charge cycle; read it with library 2.2.1. First release with a Debian package for RT Linux |
 | 2.7.0 | 1.4 | DualSense over Bluetooth on Windows; the wire contract is unchanged |
 
 Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. AdsGamepad 2.1.0 adds the extended block support and works against any 2.x service; against a service older than 2.5.0 the extended data simply reads zero. AdsGamepad 2.2.1 adds P_Ext_Battery for the battery fields a 2.6.0 or newer service fills. TcCOM module versions are independent; the module reads the same contract. Any 2.x service serves any consumer, since the controller block never changed shape.
@@ -41,7 +41,7 @@ Rumble: an ADS write of 8 bytes to the same IndexGroup at IndexOffset 16, two RE
 
 ## The service info block
 
-Since contract 1.1 the service answers a 32 byte read at IndexGroup 16#F000: contract major and minor, service major, minor and patch as words, a reserved word, then a capability double word with bit 0 for the XInput backend and bit 1 for the DualSense backend. The remaining bytes are zero.
+Since contract 1.1 the service answers a 32 byte read at IndexGroup 16#F000: contract major and minor, service major, minor and patch as words, a reserved word, then a capability double word with bit 0 for the XInput backend, bit 1 for the DualSense backend and, since contract 1.3, bit 2 while the extended block is served. The remaining bytes are zero.
 
 The PLC library reads this block once at startup and reports the result in P_Handshake_State: Compatible when the contract major matches, Unsupported against a service older than 2.1.0, which does not serve the block, and Mismatch when the service speaks a newer contract major than the library knows. Data exchange keeps running in every case; the handshake informs, it never blocks.
 
