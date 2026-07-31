@@ -25,6 +25,8 @@ Copy the package to the target and install it:
 sudo apt install ./ads-gamepad-service_*_amd64.deb
 ```
 
+apt may print a notice that the download is performed unsandboxed because the package file in your home directory is not readable by the _apt system user, and on a minimal image some debconf frontend warnings. Both are harmless and the install completes normally.
+
 The package performs the same setup as the install script below: it creates the service account, grants it access to the DualSense through a udev rule and to the TwinCAT router through its access group, and enables and starts the systemd unit. The shipped configuration maps controller slot one to the DualSense, so the pad works with no edit. Settings live in /opt/ads-gamepad-service/appsettings.json and survive upgrades, and installing the package over an earlier script install takes it over in place and keeps the configuration. After editing settings, apply them with `sudo systemctl restart adsgamepad`. Upgrades are the same apt line with the newer package file. Removing the package with apt remove keeps appsettings.json for a later install; apt purge removes it as well.
 
 ## Build and install with the scripts
@@ -55,7 +57,71 @@ Upgrades are the same two steps again: publish, then rerun the install script. T
 
 ## Bluetooth
 
-The service reads a DualSense over Bluetooth exactly as on Windows, with the cable preferred when both transports are present. This needs two things the standard Beckhoff kernel does not ship: the kernel Bluetooth stack and a Bluetooth adapter the kernel drives. On a kernel that provides them, install the BlueZ tools with `sudo apt install bluez`, then pair the pad once. Start `bluetoothctl` and register an agent before pairing; without one no bond is stored and the pad drops right back off:
+The service reads a DualSense over Bluetooth exactly as on Windows, with the cable preferred when both transports are present. Two things are needed that the standard Beckhoff kernel does not ship: the kernel Bluetooth stack and a Bluetooth adapter. This section walks through both. It is the advanced path; a wired DualSense needs none of it.
+
+The quick way to check a system is `sudo systemctl status bluetooth`: the message `unmet condition check ConditionPathIsDirectory=/sys/class/bluetooth` means the running kernel has no Bluetooth support, and `bluetoothctl` failing with `Unable to open mgmt_socket` means the same. In that state the kernel modules must be built first, as described next. The whole procedure was verified on a CX2043.
+
+### The adapter
+
+The TP-Link UB500 is the adapter this project tests with on both platforms, an inexpensive USB adapter with a Realtek chip whose firmware ships in the Debian firmware-realtek package. Other adapters can work when the kernel and the firmware archive know their chip, but the UB500 is the verified path.
+
+### Building the kernel Bluetooth modules
+
+The Beckhoff kernel is built without the Bluetooth stack, so the modules are built once from the matching kernel source and installed alongside the stock modules. Kernel modules only load when they match the running kernel exactly, so the build must use the same source, the same configuration, and the same symbol versions. Beckhoff publishes the kernel source at https://github.com/Beckhoff/linux, and the commit the running kernel was built from is the last part of the kernel release string.
+
+Install the build tools, the headers for the running kernel, BlueZ and the firmware:
+
+```
+sudo apt install linux-headers-$(uname -r) build-essential git flex bison bc libssl-dev libelf-dev dwarves python3 bluez firmware-realtek
+```
+
+Fetch the kernel source at the exact commit of the running kernel. The kernel release string only carries the first characters of the commit id and GitHub serves fetches for full ids only, so the first command resolves the full id through the GitHub API; the echo should print a 40 character id that starts with the characters from the kernel release:
+
+```
+mkdir -p ~/btbuild && cd ~/btbuild
+kr=$(uname -r)
+commit=$(curl -s "https://api.github.com/repos/Beckhoff/linux/commits/${kr##*-}" | grep -m 1 '"sha"' | cut -d '"' -f 4)
+echo "$commit"
+git init linux-bhf && cd linux-bhf
+git remote add origin https://github.com/Beckhoff/linux.git
+git fetch --depth 1 origin "$commit"
+git checkout --detach FETCH_HEAD
+```
+
+Configure with the running kernel's own configuration plus the Bluetooth options, prepare the tree, and take the symbol versions from the headers package so the built modules match the stock kernel:
+
+```
+cp /boot/config-$(uname -r) .config
+scripts/config --module BT --module BT_HIDP --module BT_HCIBTUSB --module UHID
+make olddefconfig
+make modules_prepare
+cp /usr/src/linux-headers-$(uname -r)/Module.symvers .
+```
+
+Build the Bluetooth subsystem, the USB adapter driver and the userspace HID module, then install and load them. The adapter driver uses symbols the subsystem build exports, so its build line names the symbol list the first build wrote:
+
+```
+make -j$(nproc) M=net/bluetooth modules
+make -j$(nproc) M=drivers/bluetooth KBUILD_EXTRA_SYMBOLS=$PWD/net/bluetooth/Module.symvers modules
+make -j$(nproc) M=drivers/hid modules
+sudo install -D -m 0644 -t /lib/modules/$(uname -r)/extra net/bluetooth/bluetooth.ko net/bluetooth/hidp/hidp.ko drivers/bluetooth/btusb.ko drivers/bluetooth/btrtl.ko drivers/bluetooth/btintel.ko drivers/bluetooth/btbcm.ko drivers/hid/uhid.ko
+sudo depmod -a
+echo uhid | sudo tee /etc/modules-load.d/uhid.conf
+sudo modprobe uhid
+sudo modprobe btusb
+```
+
+The builds print "Skipping BTF generation" for each module because the build has no vmlinux; that only skips optional debug information and the modules are complete. The drivers/hid build also produces a few extra HID modules that the configuration enables; only uhid.ko is installed. After loading, dmesg reports the out of tree modules as unsigned; that is expected and harmless. With the adapter plugged in, `sudo systemctl restart bluetooth` should now leave the Bluetooth service active, and `bluetoothctl show` lists the adapter. The bluetoothd log lines about missing bnep protocol support and the sap server failing with Operation not permitted are expected: those are networking and phone profiles that were deliberately not built, and the pad does not use them. After a reboot the modules load on their own when the adapter is present; BlueZ serves the pad through the uhid module, which the modules-load entry keeps loading at boot.
+
+One caveat to plan around: the modules live under the exact kernel version they were built for. A kernel package upgrade brings a new kernel without Bluetooth again, and the build above must be repeated for the new release, or Bluetooth silently disappears after the reboot.
+
+### Allowing the pad to connect
+
+The DualSense opens its input channel faster than BlueZ stores the bond, and BlueZ rejects that by default. Set `ClassicBondedOnly=false` in /etc/bluetooth/input.conf and restart the bluetooth service. Be aware this relaxes a spoofing protection for input devices on this system; it is required for the pad to reconnect reliably.
+
+### Pairing
+
+Pair the pad once. Start `bluetoothctl` and register an agent before pairing; without one no bond is stored and the pad drops right back off:
 
 ```
 agent NoInputNoOutput
@@ -71,4 +137,4 @@ trust <address>
 connect <address>
 ```
 
-Trusting the pad lets it reconnect on its own: it sleeps when idle, and a press of the PS button brings it back. If the bluetooth service log shows a rejected input connection after pairing, set `ClassicBondedOnly=false` in /etc/bluetooth/input.conf and restart the bluetooth service; the pad opens its input channel faster than the bond lands, and BlueZ rejects that by default. The udev rule shipped with the service covers the Bluetooth device node, so the service needs no extra permissions.
+Trusting the pad lets it reconnect on its own: it sleeps when idle, and a press of the PS button brings it back. A rejected input connection in the bluetooth service log means the ClassicBondedOnly setting from the section above is still on its default. The udev rule shipped with the service covers the Bluetooth device node, so the service needs no extra permissions, and the pad appears through the same DualSense slot as on the cable.

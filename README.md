@@ -16,7 +16,7 @@ The project ships as TwinCAT packages on the GitHub package feed of the Beckhoff
 
 ```powershell
 tcpkg config unset -n VerifySignatures
-tcpkg source add -n "Beckhoff USA Community" -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
+tcpkg source add -n "Beckhoff-USA-Community" -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
 ```
 
 Both settings are required, not optional, and the order matters:

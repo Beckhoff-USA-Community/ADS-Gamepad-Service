@@ -8,7 +8,7 @@ GitHub requires a login for its package feeds, even for public packages, so you 
 
 ```powershell
 tcpkg config unset -n VerifySignatures
-tcpkg source add -n "Beckhoff USA Community" -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
+tcpkg source add -n "Beckhoff-USA-Community" -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
 ```
 
 Both settings are required, and the order matters. Community packages carry no Beckhoff signature, including the disclaimer package the feed presents while it is being added, so verification must be off before the feed is added. GitHub rejects search requests larger than 100 results per page while the package manager asks for 500 by default, so without `--take 100` adding the feed fails with the error "Failed to retrieve metadata from source". Adding the feed shows the community disclaimer; accept it to continue.
@@ -82,7 +82,7 @@ Then press the pairing button on the adapter and hold the sync button on the con
 
 ## Bluetooth for the DualSense
 
-A wireless DualSense connects over regular Bluetooth, but industrial PCs rarely include a Bluetooth radio, so most machines need a USB Bluetooth adapter first. The TP-Link UB500 is the adapter this project tests with. On a machine with internet access Windows fetches its driver on first plug in. On an offline machine, download the UB500 driver package from the TP-Link support site on any connected PC, copy it over, extract it, and install the driver from an administrator PowerShell:
+A wireless DualSense connects over regular Bluetooth, but industrial PCs rarely include a Bluetooth radio, so most machines need a USB Bluetooth adapter first. The TP-Link UB500, an inexpensive USB adapter, is the one this project tests with on both Windows and Linux. On a machine with internet access Windows fetches its driver on first plug in. On an offline machine, download the UB500 driver package from the TP-Link support site on any connected PC, copy it over, and extract it. The installer program from the download may refuse to run on an industrial image; the driver itself installs without it. Open Device Manager, find the adapter listed as a generic Bluetooth device, choose Update driver, and point Browse my computer at the extracted folder. The same install also works scripted from an administrator PowerShell:
 
 ```powershell
 pnputil /add-driver C:\Temp\UB500Driver\*.inf /subdirs /install
