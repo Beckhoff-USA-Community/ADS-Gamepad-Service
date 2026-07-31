@@ -233,10 +233,10 @@
 				</Task>
 			</Tasks>
 			<Modules>
-				<Module Id="#x01010010" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.10">
+				<Module Id="#x01010010" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.11">
 					<Name>XBOX Elite Controller</Name>
 					<ImageId>1000</ImageId>
-					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.10">
+					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.11">
 						<Name>Gamepad</Name>
 						<CLSID ClassFactory="ADS_Gamepad">{4A519DAE-BC7D-F0F3-A4CB-3F944E0A3C28}</CLSID>
 						<Info>
@@ -738,10 +738,10 @@
 						</InterfacePointerValues>
 					</TmcDesc>
 				</Module>
-				<Module Id="#x01010020" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.10">
+				<Module Id="#x01010020" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.11">
 					<Name>XBOX Adaptive Joystick</Name>
 					<ImageId>1000</ImageId>
-					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.10">
+					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.11">
 						<Name>Gamepad</Name>
 						<CLSID ClassFactory="ADS_Gamepad">{4A519DAE-BC7D-F0F3-A4CB-3F944E0A3C28}</CLSID>
 						<Info>
@@ -1243,10 +1243,10 @@
 						</InterfacePointerValues>
 					</TmcDesc>
 				</Module>
-				<Module Id="#x01010030" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.10">
+				<Module Id="#x01010030" KeepUnrestoredLinks="2" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.11">
 					<Name>PS5 Dual Sense</Name>
 					<ImageId>1000</ImageId>
-					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.10">
+					<TmcDesc GUID="{AAFF9BF9-C241-4CA6-B445-F3F9F22368C0}" ClassFactoryId="Beckhoff Community|ADS_Gamepad|0.0.0.11">
 						<Name>Gamepad</Name>
 						<CLSID ClassFactory="ADS_Gamepad">{4A519DAE-BC7D-F0F3-A4CB-3F944E0A3C28}</CLSID>
 						<Info>

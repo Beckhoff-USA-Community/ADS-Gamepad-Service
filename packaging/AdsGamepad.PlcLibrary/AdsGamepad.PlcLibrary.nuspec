@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>Beckhoff-USA-Community.XAE.PLC.Lib.AdsGamepad</id>
-    <version>2.2.1</version>
+    <version>2.3.0</version>
     <title>AdsGamepad PLC Library</title>
     <authors>Beckhoff Automation LLC</authors>
     <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
@@ -12,7 +12,7 @@
     <readme>docs/README.md</readme>
     <summary>TwinCAT PLC library for the ADS Gamepad Service</summary>
     <tags>Beckhoff TwinCAT XAE PLC Library AllowMultipleVersions</tags>
-    <releaseNotes>Version 2.2.1 adds P_Ext_Battery with the charge percent and charging state a 2.6.0 or newer service serves, and 2.1.0 added ReadExtended() with P_Ext_Buttons, P_Touchpad, P_Motion and P_Sequence. Programs that never call ReadExtended behave exactly as before.</releaseNotes>
+    <releaseNotes>Version 2.3.0 makes the version handshake retry until the service answers, so a service that starts after the PLC, for example right after an install, is still recognized without a PLC restart; Unsupported now means the last attempt got no answer and the handshake keeps trying in the background. Version 2.2.1 adds P_Ext_Battery with the charge percent and charging state a 2.6.0 or newer service serves, and 2.1.0 added ReadExtended() with P_Ext_Buttons, P_Touchpad, P_Motion and P_Sequence. Programs that never call ReadExtended behave exactly as before.</releaseNotes>
     <description>AdsGamepad is the TwinCAT 3 PLC library for the ADS Gamepad Service. FB_Gamepad_Controller reads the controller state over ADS every PLC cycle and exposes buttons, sticks, triggers, battery state and rumble through properties, plus the optional extended data of a PlayStation controller. The install puts the library into the XAE library repository, ready to reference, and a copy of the library file under C:\Program Files\Beckhoff USA Community\ADS Gamepad\Library.</description>
     <dependencies>
       <dependency id="TwinCAT.Standard.XAE" version="0.0.0" />

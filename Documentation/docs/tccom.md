@@ -2,7 +2,7 @@
 
 The Gamepad TcCOM module is a TwinCAT C++ module that reads a controller from the service and exposes it as linkable process data, with no PLC code involved. You add an instance to a TwinCAT project, assign it to a task, set the controller number, and link the outputs like any other process data. It polls the service once per task cycle and zeroes all outputs when the service stops answering.
 
-The engineering workload installs the module compiled and signed into the TwinCAT module repository, so it is ready to add right after the install. Builds are included for TwinCAT RT x86, TwinCAT RT x64 and TwinCAT OS x64. The source lives in the project repository on GitHub for anyone who prefers to build and sign the module themselves; the last section covers that path.
+The engineering workload installs the module compiled and signed into the TwinCAT module repository, so it is ready to add right after the install. Builds are included for TwinCAT RT x86, TwinCAT RT x64, TwinCAT OS x64 and Beckhoff RT Linux x64, where the build result is a TME file the target loads without signing. The source lives in the project repository on GitHub for anyone who prefers to build and sign the module themselves; the last section covers that path.
 
 ## Adding an instance
 
@@ -77,6 +77,7 @@ What each module version needs and adds:
 | 0.0.0.7 | 2.1.0 | Controller data, rumble, tuning parameters, version handshake |
 | 0.0.0.9 | 2.5.0 for the extended data | The extended output area behind bReadExtended |
 | 0.0.0.10 | 2.6.0 for the battery fields | Battery percent and charging state in the extended outputs |
+| 0.0.0.11 | Same as 0.0.0.10 | The Beckhoff RT Linux build, a TME file the target loads without signing; no functional change |
 
 Any module version works against any 2.x service for the controller data itself; the handshake in stServiceInfo tells you what the service serves.
 

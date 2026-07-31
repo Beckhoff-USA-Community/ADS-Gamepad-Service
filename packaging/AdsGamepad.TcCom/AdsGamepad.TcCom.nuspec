@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>Beckhoff-USA-Community.XAE.TcCom.AdsGamepad</id>
-    <version>0.0.0.10</version>
+    <version>0.0.0.11</version>
     <title>ADS Gamepad TcCOM Module</title>
     <authors>Beckhoff Automation LLC</authors>
     <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
@@ -12,7 +12,7 @@
     <readme>docs/README.md</readme>
     <summary>Compiled Gamepad TcCOM module for the ADS Gamepad Service</summary>
     <tags>Beckhoff TwinCAT</tags>
-    <description>The compiled and signed Gamepad TcCOM module, a TwinCAT C++ module that reads a controller from the ADS Gamepad Service and exposes it as process data with no PLC code involved. The package installs the module into the TwinCAT module repository under C:\ProgramData\Beckhoff\TwinCAT\3.1\Repository, so it is ready to add to a project right after the install. Builds are included for TwinCAT RT x86 and x64 and for TwinCAT OS x64. The source lives in the project repository for anyone who prefers to build and sign the module themselves.</description>
+    <description>The compiled and signed Gamepad TcCOM module, a TwinCAT C++ module that reads a controller from the ADS Gamepad Service and exposes it as process data with no PLC code involved. The package installs the module into the TwinCAT module repository under C:\ProgramData\Beckhoff\TwinCAT\3.1\Repository, so it is ready to add to a project right after the install. Builds are included for TwinCAT RT x86 and x64, for TwinCAT OS x64, and for Beckhoff RT Linux x64 as a TME file that the target loads without signing. The source lives in the project repository for anyone who prefers to build and sign the module themselves.</description>
   </metadata>
   <files>
     <file src="repository\**" target="tools\repository" />

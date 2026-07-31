@@ -41,6 +41,8 @@ VAR
 	{attribute 'hide'}
 	_eHandshakeState : E_Gamepad_Handshake_State;
 	{attribute 'hide'}
+	_nHandshakeRetryCycles : UDINT; // Counts cycles between handshake retries after a failed attempt
+	{attribute 'hide'}
 	_ReadExtData : ADSREAD;
 	// RAW extended block for debug (Use properties to access items)
 	stGamepadExtInputs : ST_Gamepad_Ext_ADS_Inputs;
@@ -130,8 +132,10 @@ IF THIS^._bSetRumbleEvent AND NOT THIS^._WriteServerData.BUSY THEN
 	THIS^._bSetRumbleEvent := FALSE;
 END_IF
 
-// One time version handshake against the service info block at IndexGroup 16#F000.
-// Services older than 2.1.0 answer with an error, which is fine. Data exchange works either way
+// Version handshake against the service info block at IndexGroup 16#F000.
+// Services older than 2.1.0 answer with an error, which is fine. Data exchange works either way.
+// A failed attempt reports Unsupported and retries in the background, so a service that starts
+// after the PLC, for example right after an install, still gets a handshake without a PLC restart
 CASE THIS^._eHandshakeState OF
 	E_Gamepad_Handshake_State.NotStarted:
 		THIS^._ReadServiceInfo(
@@ -148,7 +152,8 @@ CASE THIS^._eHandshakeState OF
 	E_Gamepad_Handshake_State.Busy:
 		THIS^._ReadServiceInfo(READ:= TRUE);
 		IF THIS^._ReadServiceInfo.ERR THEN
-			// The service does not serve the info block, so it predates version 2.1.0
+			// No answer. The service predates version 2.1.0 or it was not reachable, for example
+			// while it was still starting. The Unsupported case below retries later
 			memset(ADR(THIS^._stServiceInfo), 0, SIZEOF(THIS^._stServiceInfo));
 			THIS^._eHandshakeState := E_Gamepad_Handshake_State.Unsupported;
 			THIS^._ReadServiceInfo(READ:= FALSE);
@@ -160,6 +165,40 @@ CASE THIS^._eHandshakeState OF
 				THIS^._eHandshakeState := E_Gamepad_Handshake_State.Mismatch;
 			END_IF
 			THIS^._ReadServiceInfo(READ:= FALSE);
+		END_IF
+
+	E_Gamepad_Handshake_State.Unsupported:
+		// Retry the handshake in the background without leaving the reported state,
+		// so consumers watching P_Handshake_State never see it flap. A genuinely old
+		// service answers every retry with an error and the state simply stays
+		// Unsupported; a service that was only starting late answers and the state
+		// moves on. 5000 cycles is five seconds at a one millisecond PLC cycle
+		THIS^._nHandshakeRetryCycles := THIS^._nHandshakeRetryCycles + 1;
+		IF THIS^._nHandshakeRetryCycles >= 5000 THEN
+			THIS^._ReadServiceInfo(
+				NETID:= THIS^._AmsNetId,
+				PORT:= 25733,
+				IDXGRP:= 16#F000,
+				IDXOFFS:= 0,
+				LEN:= SIZEOF(THIS^._stServiceInfo),
+				DESTADDR:= ADR(THIS^._stServiceInfo),
+				READ:= TRUE,
+				TMOUT:= T#5S);
+			IF THIS^._ReadServiceInfo.ERR THEN
+				// Still no answer; reset the read and count up to the next attempt
+				memset(ADR(THIS^._stServiceInfo), 0, SIZEOF(THIS^._stServiceInfo));
+				THIS^._ReadServiceInfo(READ:= FALSE);
+				THIS^._nHandshakeRetryCycles := 0;
+			ELSIF NOT THIS^._ReadServiceInfo.BUSY THEN
+				IF THIS^._stServiceInfo.nContractMajor = 1 THEN
+					THIS^._eHandshakeState := E_Gamepad_Handshake_State.Compatible;
+				ELSE
+					ADSLOGSTR( msgCtrlMask := ADSLOG_MSGTYPE_WARN, msgFmtStr := 'PLC Msg.: The ADS Gamepad Service speaks a newer wire contract, update the AdsGamepad library: %s', strArg := 'FB_Gamepad_Controller');
+					THIS^._eHandshakeState := E_Gamepad_Handshake_State.Mismatch;
+				END_IF
+				THIS^._ReadServiceInfo(READ:= FALSE);
+				THIS^._nHandshakeRetryCycles := 0;
+			END_IF
 		END_IF
 END_CASE]]></ST>
       </Implementation>
@@ -375,7 +414,7 @@ P_Status REF= THIS^._stControllerStatus;]]></ST>
     </Property>
     <Property Name="P_Handshake_State" Id="{4b8d8743-7e64-4acd-92cc-f0f888b71118}">
       <Declaration><![CDATA[{attribute 'monitoring':='call'}
-// Result of the one time version handshake with the service
+// Result of the version handshake with the service. Unsupported retries in the background
 PROPERTY P_Handshake_State : E_Gamepad_Handshake_State]]></Declaration>
       <Get Name="Get" Id="{b65b4f8a-e296-4a52-a7bc-6418a223cdd4}">
         <Declaration><![CDATA[VAR

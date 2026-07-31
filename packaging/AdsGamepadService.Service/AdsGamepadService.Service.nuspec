@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>Beckhoff-USA-Community.XAR.Service.AdsGamepad</id>
-    <version>2.9.0</version>
+    <version>2.10.0</version>
     <title>ADS Gamepad Service</title>
     <authors>Beckhoff Automation LLC</authors>
     <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
@@ -12,7 +12,7 @@
     <readme>docs/README.md</readme>
     <summary>Gamepad to PLC bridge service for TwinCAT runtime systems</summary>
     <tags>Beckhoff Setup SystemServiceRestart</tags>
-    <releaseNotes>Version 2.9.0 carries no service change; it rides the release that ships the compiled TcCOM module in the engineering workload and the reworked documentation. Version 2.8.0 extends the DualSense Bluetooth support to Linux, for kernels that include the Bluetooth stack; the standard Beckhoff kernel does not, so stock Linux systems keep reading the pad over USB. The existing DualSense slot setting covers both transports on both platforms, with the cable preferred. The udev rule now grants the service access to the Bluetooth device node, and a pad whose USB controls are frozen by a Bluetooth session is only retried over Bluetooth when a Bluetooth node actually exists. The report counter in the extended block now also moves on Bluetooth connections, where the pad drives a different counter than on USB. The wire contract is unchanged at 1.4.</releaseNotes>
+    <releaseNotes>Version 2.10.0 ships a new default configuration: one PlayStation DualSense controller on slot one, the same default Linux has always used. Systems reading Xbox controllers set SlotSources to XInput in appsettings.json; upgrades keep an edited configuration, so this affects fresh installs only. On Linux the service now logs a warning when the DualSense device node exists but opening it is denied, instead of retrying silently. The wire contract is unchanged at 1.4. Version 2.9.0 carries no service change; it rides the release that ships the compiled TcCOM module in the engineering workload and the reworked documentation. Version 2.8.0 extends the DualSense Bluetooth support to Linux, for kernels that include the Bluetooth stack; the standard Beckhoff kernel does not, so stock Linux systems keep reading the pad over USB. The existing DualSense slot setting covers both transports on both platforms, with the cable preferred. The udev rule now grants the service access to the Bluetooth device node, and a pad whose USB controls are frozen by a Bluetooth session is only retried over Bluetooth when a Bluetooth node actually exists. The report counter in the extended block now also moves on Bluetooth connections, where the pad drives a different counter than on USB. The wire contract is unchanged at 1.4.</releaseNotes>
     <description>ADS Gamepad Service reads game controllers on a TwinCAT system and serves their state to the PLC over ADS. It supports Xbox controllers through the XInput interface and PlayStation 5 DualSense controllers over USB or Bluetooth, selectable per controller slot. The service registers ADS port 25733 with the local router and answers the reads issued by the companion PLC library. It runs as a Windows service with delayed automatic start and keeps its settings in an appsettings.json file next to the executable.</description>
     <dependencies>
       <dependency id="TwinCAT.XAR.AdsApi" version="0.0.0" />

@@ -16,8 +16,9 @@ The wire format between the service and its consumers is treated as frozen. Addi
 | 2.7.0 | 1.4 | DualSense over Bluetooth on Windows; the wire contract is unchanged |
 | 2.8.0 | 1.4 | DualSense over Bluetooth on Linux, for kernels that include the Bluetooth stack; the extended block report counter now also moves on Bluetooth connections; the wire contract is unchanged |
 | 2.9.0 | 1.4 | The engineering workload installs the compiled TcCOM module; reworked documentation with screenshots; the service itself is unchanged |
+| 2.10.0 | 1.4 | Ships configured for one DualSense on slot one on both platforms; systems reading Xbox controllers set SlotSources to XInput. The TcCOM module gains a Beckhoff RT Linux build. The wire contract is unchanged |
 
-Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. AdsGamepad 2.1.0 adds the extended block support and works against any 2.x service; against a service older than 2.5.0 the extended data simply reads zero. AdsGamepad 2.2.1 adds P_Ext_Battery for the battery fields a 2.6.0 or newer service fills. TcCOM module versions are independent; the module reads the same contract, and the [TcCOM page](tccom.md) holds the module version table. Any 2.x service serves any consumer, since the controller block never changed shape.
+Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. AdsGamepad 2.1.0 adds the extended block support and works against any 2.x service; against a service older than 2.5.0 the extended data simply reads zero. AdsGamepad 2.2.1 adds P_Ext_Battery for the battery fields a 2.6.0 or newer service fills. AdsGamepad 2.3.0 makes the version handshake retry until the service answers, so a service that starts after the PLC is still recognized. TcCOM module versions are independent; the module reads the same contract, and the [TcCOM page](tccom.md) holds the module version table. Any 2.x service serves any consumer, since the controller block never changed shape.
 
 ## The controller block
 
@@ -45,7 +46,7 @@ Rumble: an ADS write of 8 bytes to the same IndexGroup at IndexOffset 16, two RE
 
 Since contract 1.1 the service answers a 32 byte read at IndexGroup 16#F000: contract major and minor, service major, minor and patch as words, a reserved word, then a capability double word with bit 0 for the XInput backend, bit 1 for the DualSense backend and, since contract 1.3, bit 2 while the extended block is served. The remaining bytes are zero.
 
-The PLC library reads this block once at startup and reports the result in P_Handshake_State: Compatible when the contract major matches, Unsupported against a service older than 2.1.0, which does not serve the block, and Mismatch when the service speaks a newer contract major than the library knows. Data exchange keeps running in every case; the handshake informs, it never blocks.
+The PLC library reads this block at startup and reports the result in P_Handshake_State: Compatible when the contract major matches, Unsupported while no answer arrives, and Mismatch when the service speaks a newer contract major than the library knows. Unsupported covers both a service older than 2.1.0, which does not serve the block, and a service that was not reachable yet, for example while it was still starting; from library 2.3.0 a failed attempt retries in the background until an answer arrives. Data exchange keeps running in every case; the handshake informs, it never blocks.
 
 ## The extended block
 

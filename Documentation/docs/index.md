@@ -22,6 +22,6 @@ Three ways to consume the data:
 
 ## Where to start
 
-Install the service on the machine that has the controllers attached: on Windows through the [TwinCAT Package Manager](installation/windows.md), on a Beckhoff RT Linux controller with the [Debian package](installation/linux.md). Then add the PLC library to your project and read your first controller with a few lines, shown on the [PLC library page](plc-library.md). The [applications page](applications.md) collects patterns for jogging axes, driving movers and hand held control, and the safety thinking that belongs with them.
+Install the service on the machine that has the controllers attached: on Windows through the [TwinCAT Package Manager](installation/windows.md), on a Beckhoff RT Linux controller with the [Debian package](installation/linux.md). The service ships configured for one DualSense; the [service page](service.md) documents the configuration, including how to switch the slots to Xbox controllers. Then add the PLC library to your project and read your first controller with a few lines, shown on the [PLC library page](plc-library.md). The [applications page](applications.md) collects patterns for jogging axes, driving movers and hand held control, and the safety thinking that belongs with them.
 
 This project is the continuation of the TC_XboxController project under a new home and a new name. If you come from the old service or the XboxControllerUtilities library, the [migration page](migration.md) walks you through the change.

@@ -51,6 +51,8 @@ namespace AdsGamepadService.Input
            Bluetooth side; the next open then tries Bluetooth first. */
         private volatile bool _retryPreferBluetooth;
         private volatile bool _bluetoothTransport;
+        // Keeps the permission warning to one line per denial streak
+        private bool _accessDeniedLogged;
 
         private DualSenseState _current;
         private bool _connected;
@@ -319,10 +321,11 @@ namespace AdsGamepadService.Input
         /* A Bluetooth pad must be switched to its full report mode before the
            reports carry anything beyond sticks; a channel where the switch
            fails is treated as a failed open and retried. */
-        private IHidChannel? OpenChannel()
+        private IHidChannel? OpenChannel(out bool accessDenied)
         {
             bool preferBluetooth = _retryPreferBluetooth;
             _retryPreferBluetooth = false;
+            accessDenied = false;
             IHidChannel? channel;
             if (OperatingSystem.IsWindows())
             {
@@ -330,7 +333,7 @@ namespace AdsGamepadService.Input
             }
             else
             {
-                channel = LinuxHidChannel.Open(LinuxUsbHidIdMatch, LinuxBtHidIdMatch, preferBluetooth);
+                channel = LinuxHidChannel.Open(LinuxUsbHidIdMatch, LinuxBtHidIdMatch, out accessDenied, preferBluetooth);
             }
             if (channel is not null && channel.IsBluetooth && !RequestFullReports(channel))
             {
@@ -351,12 +354,28 @@ namespace AdsGamepadService.Input
         {
             while (!_stopping)
             {
-                IHidChannel? channel = OpenChannel();
+                IHidChannel? channel = OpenChannel(out bool accessDenied);
                 if (channel is null)
                 {
+                    /* Permission trouble would otherwise look identical to an
+                       absent pad; one warning per denial streak makes it
+                       visible in the journal. An absent pad ends the streak,
+                       so a replugged pad that is still denied warns again. */
+                    if (accessDenied && !_accessDeniedLogged)
+                    {
+                        _accessDeniedLogged = true;
+                        _logger.LogWarning(
+                            "DualSense on slot {Slot} was found but opening it was denied. Check that the udev rule is installed and replug the pad or retrigger the rules.",
+                            ControllerNumber);
+                    }
+                    else if (!accessDenied)
+                    {
+                        _accessDeniedLogged = false;
+                    }
                     Thread.Sleep(ReconnectDelayMs);
                     continue;
                 }
+                _accessDeniedLogged = false;
                 lock (_channelSync)
                 {
                     _channel = channel;

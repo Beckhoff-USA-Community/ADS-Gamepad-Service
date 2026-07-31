@@ -8,7 +8,7 @@ The TcCOM module turns a controller into linkable process data with no PLC code 
 
 ## Installing on Windows
 
-The project ships as TwinCAT packages on the GitHub package feed of the Beckhoff USA Community organization. Three steps: create a token, add the feed, install the workload that matches the system.
+The project ships as TwinCAT packages on the GitHub package feed of the Beckhoff USA Community organization. Four steps: create a token, add the feed, install the workload that matches the system, set the controller type.
 
 **1. Create a token.** GitHub requires a login for its package feeds, even for public packages. In your GitHub account under Developer settings, create a personal access token of the classic type with the read:packages scope. The token starts with ghp_.
 
@@ -35,6 +35,8 @@ tcpkg install Beckhoff-USA-Community.AdsGamepad.XAE -y
 
 After the install the service is running, the AdsGamepad library is in the XAE library repository ready to reference, and the Gamepad TcCOM module is in the TwinCAT module repository ready to add to a project.
 
+**4. Set the controller type.** The service ships configured for one PlayStation DualSense controller, so a DualSense on a USB cable works right away. To read Xbox controllers instead, set the slots to XInput in C:\Program Files\Beckhoff USA Community\ADS Gamepad\Service\appsettings.json and restart the service with Restart-Service AdsGamepadService. The service page of the documentation covers every setting.
+
 If adding the feed fails, confirm the token is the classic type (it starts with ghp_), that it has the read:packages scope, and that it has not expired.
 
 ## Installing on Beckhoff RT Linux
@@ -45,7 +47,7 @@ The service ships as a Debian package, attached to each release on the Releases 
 sudo apt install ./ads-gamepad-service_*_amd64.deb
 ```
 
-The package creates a service account, sets up device access for the DualSense, and starts the systemd unit. Settings live in /opt/ads-gamepad-service/appsettings.json and survive upgrades. The linux directory and the Linux installation page of the documentation cover the details, including the build from source path.
+The package creates a service account, sets up device access for the DualSense, and starts the systemd unit. The default configuration reads one DualSense on slot one, so the pad works with no edit. Settings live in /opt/ads-gamepad-service/appsettings.json and survive upgrades. The linux directory and the Linux installation page of the documentation cover the details, including the build from source path.
 
 ## Updating
 

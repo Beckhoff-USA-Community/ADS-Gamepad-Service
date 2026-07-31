@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 $moduleDir = 'C:\ProgramData\Beckhoff\TwinCAT\3.1\Repository\Beckhoff Community\ADS_Gamepad'
-$versionDir = Join-Path $moduleDir '0.0.0.10'
+$versionDir = Join-Path $moduleDir '0.0.0.11'
 $vendorDir = Split-Path $moduleDir -Parent
 
 if (Test-Path $versionDir) {

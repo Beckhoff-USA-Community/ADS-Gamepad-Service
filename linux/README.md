@@ -72,8 +72,10 @@ sudo sh ./install.sh
 The install creates the adsgamepad service account and the gamepad device
 access group, installs a udev rule for the DualSense, and starts the
 systemd unit. Settings live in /opt/ads-gamepad-service/appsettings.json
-and survive upgrades; the Linux default maps controller slot one to the
-DualSense. See CONFIGURATION.md in the repository root for every setting.
+and survive upgrades; the default maps controller slot one to the
+DualSense. After editing settings, apply them with
+sudo systemctl restart adsgamepad. See CONFIGURATION.md in the
+repository root for every setting.
 
 Watch the service:
 

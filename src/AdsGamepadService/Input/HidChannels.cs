@@ -253,8 +253,9 @@ namespace AdsGamepadService.Input
            uevent file naming the device id as HID_ID=<bus>:<vid>:<pid>.
            Bus 0003 is USB and bus 0005 is Bluetooth, so each transport has
            its own match and neither can take the other's node. */
-        internal static LinuxHidChannel? Open(string usbHidIdMatch, string bluetoothHidIdMatch, bool preferBluetooth = false)
+        internal static LinuxHidChannel? Open(string usbHidIdMatch, string bluetoothHidIdMatch, out bool accessDenied, bool preferBluetooth = false)
         {
+            accessDenied = false;
             string? usbNode = null;
             string? btNode = null;
             try
@@ -308,6 +309,7 @@ namespace AdsGamepadService.Input
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
                     // A readable but not writable node must not leak the read stream
+                    accessDenied = ex is UnauthorizedAccessException;
                     read.Dispose();
                     return null;
                 }
@@ -315,6 +317,7 @@ namespace AdsGamepadService.Input
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 // Wrong permissions or the node vanished between listing and open
+                accessDenied = ex is UnauthorizedAccessException;
                 return null;
             }
         }

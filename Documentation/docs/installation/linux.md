@@ -25,7 +25,7 @@ Copy the package to the target and install it:
 sudo apt install ./ads-gamepad-service_*_amd64.deb
 ```
 
-The package performs the same setup as the install script below: it creates the service account, grants it access to the DualSense through a udev rule and to the TwinCAT router through its access group, and enables and starts the systemd unit. Settings live in /opt/ads-gamepad-service/appsettings.json and survive upgrades, and installing the package over an earlier script install takes it over in place and keeps the configuration. Upgrades are the same apt line with the newer package file. Removing the package with apt remove keeps appsettings.json for a later install; apt purge removes it as well.
+The package performs the same setup as the install script below: it creates the service account, grants it access to the DualSense through a udev rule and to the TwinCAT router through its access group, and enables and starts the systemd unit. The shipped configuration maps controller slot one to the DualSense, so the pad works with no edit. Settings live in /opt/ads-gamepad-service/appsettings.json and survive upgrades, and installing the package over an earlier script install takes it over in place and keeps the configuration. After editing settings, apply them with `sudo systemctl restart adsgamepad`. Upgrades are the same apt line with the newer package file. Removing the package with apt remove keeps appsettings.json for a later install; apt purge removes it as well.
 
 ## Build and install with the scripts
 
@@ -42,7 +42,7 @@ cd linux
 sudo sh ./install.sh
 ```
 
-The install creates a service account, grants it access to the DualSense through a udev rule and to the TwinCAT router through its access group, and starts the systemd unit. Settings live in /opt/ads-gamepad-service/appsettings.json and survive upgrades; the Linux default maps controller slot one to the DualSense.
+The install creates a service account, grants it access to the DualSense through a udev rule and to the TwinCAT router through its access group, and starts the systemd unit. Settings live in /opt/ads-gamepad-service/appsettings.json and survive upgrades; the default maps controller slot one to the DualSense.
 
 Watch the service:
 

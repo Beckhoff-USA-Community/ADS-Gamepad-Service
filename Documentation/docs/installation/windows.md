@@ -24,6 +24,31 @@ tcpkg install Beckhoff-USA-Community.AdsGamepad.XAE -y
 
 The runtime workload registers the service with delayed automatic start. The engineering workload puts the AdsGamepad library into the XAE library repository ready to reference, puts the compiled Gamepad TcCOM module into the TwinCAT module repository ready to add to a project, and installs the documentation under C:\Program Files\Beckhoff USA Community\ADS Gamepad.
 
+## Choosing the controller type
+
+This step is part of the install: the service polls only the controller types its configuration names. It ships configured for one PlayStation 5 DualSense controller on the first slot, so a DualSense on a USB cable works right after the install with no changes.
+
+To read Xbox controllers instead, edit C:\Program Files\Beckhoff USA Community\ADS Gamepad\Service\appsettings.json and set the slots to XInput:
+
+```json
+{
+  "Service": {
+    "AmsPort": 25733,
+    "ServerName": "XboxAdsServer",
+    "MaxControllers": 4,
+    "SlotSources": [ "XInput", "XInput", "XInput", "XInput" ]
+  }
+}
+```
+
+Then restart the service from an administrator PowerShell:
+
+```powershell
+Restart-Service AdsGamepadService
+```
+
+Each slot polls the Xbox controller with the same number. The [service page](../service.md) documents every setting, including mixing a DualSense with Xbox controllers.
+
 ## Updating
 
 Upgrade a workload and its component packages follow, since every workload pins its components at exact versions. The service keeps an edited appsettings.json across upgrades, even when the upgrade moves the installation to a new location.
@@ -53,7 +78,7 @@ expand -F:* .\<driver package>.cab C:\Temp\XboxAdapterDriver
 pnputil /add-driver C:\Temp\XboxAdapterDriver\*.inf /install
 ```
 
-Then press the pairing button on the adapter and hold the sync button on the controller until its Xbox button stays lit. The pad appears as a normal XInput controller and the service needs no configuration change. Xbox controllers failed to pair with Realtek based Bluetooth adapters in testing, including the adapter the next section recommends for the DualSense; the pairing handshake itself fails, so it is not a settings problem. The official adapter is the supported path.
+Then press the pairing button on the adapter and hold the sync button on the controller until its Xbox button stays lit. The pad appears as a normal XInput controller, so beyond the XInput slot setting described above it needs no further configuration. Xbox controllers failed to pair with Realtek based Bluetooth adapters in testing, including the adapter the next section recommends for the DualSense; the pairing handshake itself fails, so it is not a settings problem. The official adapter is the supported path.
 
 ## Bluetooth for the DualSense
 
@@ -63,4 +88,4 @@ A wireless DualSense connects over regular Bluetooth, but industrial PCs rarely 
 pnputil /add-driver C:\Temp\UB500Driver\*.inf /subdirs /install
 ```
 
-Then plug in the adapter, put the controller into pairing mode by holding its Create and PS buttons until the light bar flashes, and pair it under the Windows Bluetooth settings. The service picks the pad up with no configuration change; the service page describes the pairing behavior in detail. This adapter serves the DualSense only. Xbox controllers do not pair with it, as described above.
+Then plug in the adapter, put the controller into pairing mode by holding its Create and PS buttons until the light bar flashes, and pair it under the Windows Bluetooth settings. The pad connects through the same DualSense slot the service ships configured with, so switching between cable and Bluetooth needs no configuration change; the [service page](../service.md) describes the pairing behavior in detail. This adapter serves the DualSense only. Xbox controllers do not pair with it, as described above.

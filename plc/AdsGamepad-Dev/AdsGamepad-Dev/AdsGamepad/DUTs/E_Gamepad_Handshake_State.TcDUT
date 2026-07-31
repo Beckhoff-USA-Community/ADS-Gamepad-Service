@@ -11,7 +11,8 @@ TYPE E_Gamepad_Handshake_State :
 	Busy := 1,
 	// The service answered and the contract versions are compatible
 	Compatible := 2,
-	// The service predates the info block. Data exchange still works
+	// The last attempt got no answer. The service predates the info block or was not
+	// reachable yet; the handshake keeps retrying. Data exchange still works
 	Unsupported := 3,
 	// The service speaks a newer contract major version. Check for a library update
 	Mismatch := 4

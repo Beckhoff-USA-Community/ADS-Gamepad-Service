@@ -5,7 +5,7 @@ $productDir = Split-Path $installDir -Parent
 
 # The identity format is "Name, Version (Company)". Version and company must
 # match the installed library, so keep this line in step with the package.
-$libraryIdentity = 'AdsGamepad, 2.2.1 (Beckhoff Community)'
+$libraryIdentity = 'AdsGamepad, 2.3.0 (Beckhoff Community)'
 
 $repTools = @(Join-Path 'C:\Program Files (x86)\Beckhoff\TwinCAT\3.1\Components\Plc\Build_4026.*\' 'Common\RepTool.exe' -Resolve)
 if ($repTools.Length -gt 0) {

@@ -65,13 +65,13 @@ fbJog(Axis         := Axis,
 
 ## New in 2.0.0: the version handshake
 
-The function block now reads a 32 byte info block from the service once at startup, from IndexGroup 16#F000. Two new properties expose the result:
+The function block now reads a 32 byte info block from the service at startup, from IndexGroup 16#F000. Two new properties expose the result:
 
 * P_Handshake_State returns E_Gamepad_Handshake_State with the values NotStarted, Busy, Compatible, Unsupported, and Mismatch.
 * P_Service_Info returns ST_Gamepad_Service_Info, which holds the wire contract version numbers, the service version numbers, and capability bits.
 
-Services older than 2.1.0 do not serve the info block, so against them the handshake reports Unsupported and everything else keeps working. Mismatch means the service speaks a newer contract than the library expects; data exchange still runs, and you should update the library. The wire format of the controller blocks themselves is byte for byte unchanged, so old and new pairs of library and service interoperate.
+Services older than 2.1.0 do not serve the info block, so against them the handshake reports Unsupported and everything else keeps working. Unsupported also appears while the service is not reachable yet, for example right after an install; from library 2.3.0 the handshake retries in the background until an answer arrives. Mismatch means the service speaks a newer contract than the library expects; data exchange still runs, and you should update the library. The wire format of the controller blocks themselves is byte for byte unchanged, so old and new pairs of library and service interoperate.
 
 ## Choosing between the PLC library and the TcCOM module
 
-The repository also offers a TcCOM module, described in its own readme, tccom/README.md in the repository and TcComModule.md in the installed documentation set. The PLC library is the simple path: it works everywhere TwinCAT PLC runs, and one function block serves one controller. The TcCOM module suits projects that want gamepad data as linkable process data without any PLC code and are comfortable building C++.
+The repository also offers a TcCOM module, described in its own readme, tccom/README.md in the repository and TcComModule.md in the installed documentation set. The PLC library is the simple path: it works everywhere TwinCAT PLC runs, and one function block serves one controller. The TcCOM module suits projects that want gamepad data as linkable process data without any PLC code; the engineering workload installs it compiled, and building from source stays available for those who prefer it.
