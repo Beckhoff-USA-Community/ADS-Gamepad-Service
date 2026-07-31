@@ -15,14 +15,16 @@ The project ships as TwinCAT packages on the GitHub package feed of the Beckhoff
 **2. Add the feed** from an administrator PowerShell, and enter the token when prompted for a password:
 
 ```powershell
-tcpkg source add -n "Beckhoff USA Community" -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
 tcpkg config unset -n VerifySignatures
+tcpkg source add -n "Beckhoff USA Community" -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
 ```
 
-Both settings are required, not optional:
+Both settings are required, not optional, and the order matters:
 
+* `tcpkg config unset -n VerifySignatures` allows packages that are not signed by Beckhoff. Community packages carry no Beckhoff signature, including the disclaimer package the feed presents while it is being added, so verification must be off before the feed is added.
 * `--take 100` limits search requests to 100 results per page. GitHub rejects anything larger, while the TwinCAT Package Manager asks for 500 by default. Without this option, adding the feed fails with the error "Failed to retrieve metadata from source".
-* `tcpkg config unset -n VerifySignatures` allows packages that are not signed by Beckhoff. Community packages carry no Beckhoff signature, so installs fail while signature verification is on.
+
+Adding the feed shows the community disclaimer; accept it to continue.
 
 **3. Install.** The runtime workload puts the service on the system that has the controllers attached. The engineering workload puts the PLC library, the compiled TcCOM module and the documentation on the system that runs XAE. Run the line that matches the system, or both on a machine that does both jobs:
 

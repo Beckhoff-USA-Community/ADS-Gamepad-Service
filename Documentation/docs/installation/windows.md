@@ -7,11 +7,11 @@ The project ships as TwinCAT packages on the GitHub package feed of the Beckhoff
 GitHub requires a login for its package feeds, even for public packages, so you need a GitHub account and a personal access token. Create a token of the classic type with the read:packages scope under Developer settings in your GitHub account settings, then from an administrator PowerShell:
 
 ```powershell
-tcpkg source add -n "Beckhoff USA Community" -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
 tcpkg config unset -n VerifySignatures
+tcpkg source add -n "Beckhoff USA Community" -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
 ```
 
-Both settings are required. GitHub rejects search requests larger than 100 results per page while the package manager asks for 500 by default, so without `--take 100` adding the feed fails with the error "Failed to retrieve metadata from source". Community packages carry no Beckhoff signature, so installs fail while signature verification is on.
+Both settings are required, and the order matters. Community packages carry no Beckhoff signature, including the disclaimer package the feed presents while it is being added, so verification must be off before the feed is added. GitHub rejects search requests larger than 100 results per page while the package manager asks for 500 by default, so without `--take 100` adding the feed fails with the error "Failed to retrieve metadata from source". Adding the feed shows the community disclaimer; accept it to continue.
 
 ## Installing
 
