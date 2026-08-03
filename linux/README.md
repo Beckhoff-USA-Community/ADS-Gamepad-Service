@@ -8,8 +8,8 @@ on a kernel that provides the Bluetooth stack, which the standard Beckhoff
 kernel does not, the service also reads it over Bluetooth with the cable
 preferred. The ADS side is unchanged, the service registers port 25733 with
 the local TwinCAT router and the PLC library works exactly as on Windows.
-The compiled TcCOM module ships for the x64 systems only; on an ARM
-controller use the PLC library.
+The compiled TcCOM module ships builds for both the x64 and the ARM
+systems.
 
 ## Requirements
 
@@ -48,6 +48,9 @@ sudo apt install ./ads-gamepad-service_*.deb
 The package performs the same setup as the install script below: it creates
 the adsgamepad service account and the gamepad device access group, installs
 the udev rule for the DualSense, and enables and starts the systemd unit.
+On the ARM controllers the standard kernel currently needs one rebuilt
+module before the pad can be read; the Linux installation page of the
+documentation has the steps.
 Settings live in /opt/ads-gamepad-service/appsettings.json and survive
 upgrades. Installing the package over an earlier script install takes it
 over in place and keeps the configuration.

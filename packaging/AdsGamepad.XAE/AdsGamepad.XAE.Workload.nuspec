@@ -18,7 +18,7 @@
     <dependencies>
       <dependency id="Beckhoff-USA-Community.XAE.PLC.Lib.AdsGamepad" version="2.3.0" />
       <dependency id="Beckhoff-USA-Community.XAE.Documentation.AdsGamepad" version="1.9.0" />
-      <dependency id="Beckhoff-USA-Community.XAE.TcCom.AdsGamepad" version="0.0.0.11" />
+      <dependency id="Beckhoff-USA-Community.XAE.TcCom.AdsGamepad" version="0.0.0.12" />
     </dependencies>
   </metadata>
   <files>

@@ -1,8 +1,8 @@
 # Installation on Beckhoff RT Linux
 
-The service runs on Beckhoff RT Linux as a systemd service and reads a PlayStation 5 DualSense controller. The ADS side is identical to Windows, so the PLC library works unchanged. The compiled TcCOM module ships for the x64 systems only; on an ARM controller such as the CX8200 or CX9240 series, use the PLC library.
+The service runs on Beckhoff RT Linux as a systemd service and reads a PlayStation 5 DualSense controller. The ADS side is identical to Windows, so the PLC library works unchanged, and the compiled TcCOM module ships builds for both the x64 and the ARM systems.
 
-Linux is DualSense only, and the reason is worth understanding when you plan a machine. The DualSense speaks plain USB HID, a standard the kernel serves out of the box, so the service reads it directly with no driver at all. Xbox controllers speak a proprietary USB protocol that needs a kernel driver, and Bluetooth of any kind needs the kernel Bluetooth stack; the standard Beckhoff kernel ships with neither, and a service alone cannot replace kernel support. On a stock system, plan on a DualSense with a cable. The service itself also speaks Bluetooth and uses it on a kernel that provides the stack; the Bluetooth section below has the details.
+Linux is DualSense only, and the reason is worth understanding when you plan a machine. The DualSense speaks plain USB HID, a standard the kernel serves out of the box, so the service reads it directly with no driver at all. Xbox controllers speak a proprietary USB protocol that needs a kernel driver, and Bluetooth of any kind needs the kernel Bluetooth stack; the standard Beckhoff kernel ships with neither, and a service alone cannot replace kernel support. On a stock x86 system, plan on a DualSense with a cable. On the ARM controllers one rebuilt kernel module is currently needed before even the wired pad can be read; the raw HID layer section below has the steps. The service itself also speaks Bluetooth and uses it on a kernel that provides the stack; the Bluetooth section below has the details.
 
 ## Requirements
 
@@ -56,6 +56,26 @@ journalctl -u adsgamepad -f
 ```
 
 Upgrades are the same two steps again: publish, then rerun the install script. To remove the service, run `sudo sh ./uninstall.sh` from the same directory.
+
+## The ARM controllers and the raw HID layer
+
+On the ARM controllers such as the CX8200 and CX9240 series, the standard Beckhoff kernel currently ships without the raw HID layer, the hidraw interface the service reads the pad through. The x86 image includes it; the ARM image does not yet. The service installs and runs and the PLC sees the fail safe zero state, but no pad can appear until the layer is present. The check is quick: if `ls /sys/class/hidraw` reports no such directory, the running kernel has no raw HID layer. The procedure below was verified on a CX9240 and a CX8290.
+
+The fix is one rebuilt module. The raw HID layer is part of hid.ko rather than a module of its own, so hid.ko is rebuilt once with the layer enabled and installed as an override next to the stock modules. The first steps are shared with the Bluetooth walkthrough below: install the build tools and the headers for the running kernel (BlueZ and the firmware are not needed for this), and fetch the kernel source at the exact commit of the running kernel. Then configure, build and install the override:
+
+```
+cp /boot/config-$(uname -r) .config
+scripts/config --enable HIDRAW
+make olddefconfig
+make modules_prepare
+cp /usr/src/linux-headers-$(uname -r)/Module.symvers .
+make -j$(nproc) M=drivers/hid modules
+sudo install -D -m 0644 -t /lib/modules/$(uname -r)/updates drivers/hid/hid.ko
+sudo depmod -a
+sudo reboot
+```
+
+After the reboot the DualSense device node appears and the udev rule the package installed grants the service access; the pad comes onto the wire with no further step. The kernel upgrade caveat from the Bluetooth section applies here the same way: a kernel package upgrade brings a stock kernel without the layer again, and the module must be rebuilt for the new release or the pad silently disappears after the reboot.
 
 ## Bluetooth
 
@@ -112,6 +132,16 @@ echo uhid | sudo tee /etc/modules-load.d/uhid.conf
 sudo modprobe uhid
 sudo modprobe btusb
 ```
+
+On the ARM controllers two additions are needed, verified on a CX9240. First, the raw HID layer section above applies before any of this; Bluetooth needs that rebuilt module as well. Second, the ARM kernel configuration also lacks the elliptic curve cryptography that Bluetooth pairing uses, so two crypto modules join the build: build the crypto directory after copying Module.symvers, hand the Bluetooth build their symbol list in place of the plain net/bluetooth line above, and install the two extra modules along with the others:
+
+```
+make -j$(nproc) M=crypto modules
+make -j$(nproc) M=net/bluetooth KBUILD_EXTRA_SYMBOLS=$PWD/crypto/Module.symvers modules
+sudo install -D -m 0644 -t /lib/modules/$(uname -r)/extra crypto/ecc.ko crypto/ecdh_generic.ko
+```
+
+The configuration step needs no extra option for this; enabling Bluetooth selects the crypto entries on its own, and the build lines above pick them up.
 
 The builds print "Skipping BTF generation" for each module because the build has no vmlinux; that only skips optional debug information and the modules are complete. The drivers/hid build also produces a few extra HID modules that the configuration enables; only uhid.ko is installed. After loading, dmesg reports the out of tree modules as unsigned; that is expected and harmless. With the adapter plugged in, `sudo systemctl restart bluetooth` should now leave the Bluetooth service active, and `bluetoothctl show` lists the adapter. The bluetoothd log lines about missing bnep protocol support and the sap server failing with Operation not permitted are expected: those are networking and phone profiles that were deliberately not built, and the pad does not use them. After a reboot the modules load on their own when the adapter is present; BlueZ serves the pad through the uhid module, which the modules-load entry keeps loading at boot.
 

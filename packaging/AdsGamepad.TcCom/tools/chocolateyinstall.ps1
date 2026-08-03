@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $toolsDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $sourceDir = Join-Path $toolsDir 'repository'
 $repositoryDir = 'C:\ProgramData\Beckhoff\TwinCAT\3.1\Repository'
-$moduleVersionDir = Join-Path $repositoryDir 'Beckhoff Community\ADS_Gamepad\0.0.0.11'
+$moduleVersionDir = Join-Path $repositoryDir 'Beckhoff Community\ADS_Gamepad\0.0.0.12'
 
 New-Item -ItemType Directory -Force -Path $repositoryDir | Out-Null
 Copy-Item (Join-Path $sourceDir '*') $repositoryDir -Recurse -Force

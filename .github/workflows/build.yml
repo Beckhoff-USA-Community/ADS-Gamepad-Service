@@ -93,7 +93,7 @@ jobs:
           # with the Windows module and the Beckhoff RT Linux TME in place
           $tccomVersion = $tccom.package.metadata.version
           $tccomPayload = "packaging/AdsGamepad.TcCom/repository/Beckhoff Community/ADS_Gamepad/$tccomVersion"
-          foreach ($file in "ADS_Gamepad.tmc", "TwinCAT RT (x64)/ADS_Gamepad.tmx", "TwinCAT OS (x64-E)/ADS_Gamepad.tme") {
+          foreach ($file in "ADS_Gamepad.tmc", "TwinCAT RT (x64)/ADS_Gamepad.tmx", "TwinCAT OS (x64-E)/ADS_Gamepad.tme", "TwinCAT OS (ARMV8-A)/ADS_Gamepad.tme") {
             if (-not (Test-Path "$tccomPayload/$file")) {
               throw "The TcCom package payload is missing $file under version $tccomVersion. Publish the module at $tccomVersion and refresh the committed payload."
             }

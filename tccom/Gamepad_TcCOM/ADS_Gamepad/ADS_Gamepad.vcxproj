@@ -118,7 +118,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <TcPublishPlatforms>TwinCAT RT (x86);TwinCAT RT (x64);TwinCAT OS (x64);TwinCAT OS (x64-E)</TcPublishPlatforms>
+    <TcPublishPlatforms>TwinCAT RT (x86);TwinCAT RT (x64);TwinCAT OS (x64);TwinCAT OS (x64-E);TwinCAT OS (ARMV8-A)</TcPublishPlatforms>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|TwinCAT RT (x86)'">
   </ItemDefinitionGroup>
