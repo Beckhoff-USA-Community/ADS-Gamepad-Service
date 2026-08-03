@@ -41,10 +41,10 @@ If adding the feed fails, confirm the token is the classic type (it starts with 
 
 ## Installing on Beckhoff RT Linux
 
-The service ships as a Debian package, attached to each release on the Releases page of this repository. Download it, copy it to the target, and install it with apt:
+The service ships as a Debian package, attached to each release on the Releases page of this repository. Releases from 2.12.0 on attach two packages: amd64 for the x86 controllers and arm64 for the ARM controllers such as the CX8200 and CX9240 series. Download the one matching your target, copy it over, and install it with apt:
 
 ```
-sudo apt install ./ads-gamepad-service_*_amd64.deb
+sudo apt install ./ads-gamepad-service_*.deb
 ```
 
 The package creates a service account, sets up device access for the DualSense, and starts the systemd unit. The default configuration reads one DualSense on slot one, so the pad works with no edit. Settings live in /opt/ads-gamepad-service/appsettings.json and survive upgrades. The linux directory and the Linux installation page of the documentation cover the details, including the build from source path.

@@ -1,6 +1,6 @@
 # Installation on Beckhoff RT Linux
 
-The service runs on Beckhoff RT Linux as a systemd service and reads a PlayStation 5 DualSense controller. The ADS side is identical to Windows, so the PLC library and the TcCOM module work unchanged.
+The service runs on Beckhoff RT Linux as a systemd service and reads a PlayStation 5 DualSense controller. The ADS side is identical to Windows, so the PLC library works unchanged. The compiled TcCOM module ships for the x64 systems only; on an ARM controller such as the CX8200 or CX9240 series, use the PLC library.
 
 Linux is DualSense only, and the reason is worth understanding when you plan a machine. The DualSense speaks plain USB HID, a standard the kernel serves out of the box, so the service reads it directly with no driver at all. Xbox controllers speak a proprietary USB protocol that needs a kernel driver, and Bluetooth of any kind needs the kernel Bluetooth stack; the standard Beckhoff kernel ships with neither, and a service alone cannot replace kernel support. On a stock system, plan on a DualSense with a cable. The service itself also speaks Bluetooth and uses it on a kernel that provides the stack; the Bluetooth section below has the details.
 
@@ -12,17 +12,19 @@ Linux is DualSense only, and the reason is worth understanding when you plan a m
 
 ## Install from the Debian package
 
-The simplest install is the Debian package, attached to each release on the GitHub Releases page of the repository. It can also be built locally on any Linux machine, from the repository root:
+The simplest install is the Debian package, attached to each release on the GitHub Releases page of the repository. Releases from 2.12.0 on carry two packages: amd64 for the x86 controllers and arm64 for the ARM controllers such as the CX8200 and CX9240 series. The package can also be built locally on any Linux machine, from the repository root:
 
 ```
 dotnet publish src/AdsGamepadService -c Release -r linux-x64 --self-contained -o linux/publish
 sh linux/build-deb.sh
 ```
 
-Copy the package to the target and install it:
+For an ARM target, publish with `-r linux-arm64` and name the architecture as the third argument: `sh linux/build-deb.sh linux/publish linux arm64`.
+
+Copy the package matching the target and install it:
 
 ```
-sudo apt install ./ads-gamepad-service_*_amd64.deb
+sudo apt install ./ads-gamepad-service_*.deb
 ```
 
 apt may print a notice that the download is performed unsandboxed because the package file in your home directory is not readable by the _apt system user, and on a minimal image some debconf frontend warnings. Both are harmless and the install completes normally.
@@ -31,7 +33,7 @@ The package performs the same setup as the install script below: it creates the 
 
 ## Build and install with the scripts
 
-On your build machine, from the repository root:
+On your build machine, from the repository root, with `-r linux-arm64` in place of `-r linux-x64` for an ARM target:
 
 ```
 dotnet publish src/AdsGamepadService -c Release -r linux-x64 --self-contained -o linux/publish

@@ -18,6 +18,7 @@ The wire format between the service and its consumers is treated as frozen. Addi
 | 2.9.0 | 1.4 | The engineering workload installs the compiled TcCOM module; reworked documentation with screenshots; the service itself is unchanged |
 | 2.10.0 | 1.4 | Ships configured for one DualSense on slot one on both platforms; systems reading Xbox controllers set SlotSources to XInput. The TcCOM module gains a Beckhoff RT Linux build. The wire contract is unchanged |
 | 2.11.0 | 1.4 | Documentation release: the Linux installation page gains the full Bluetooth walkthrough, from building the kernel modules to pairing; the service itself is unchanged |
+| 2.12.0 | 1.4 | The Debian package is now also built for arm64, covering the ARM controllers such as the CX8200 and CX9240 series, and releases from this version on attach both packages; the service itself is unchanged |
 
 Library: AdsGamepad 2.0.0 replaces XboxControllerUtilities, whose final release is 1.5. AdsGamepad 2.1.0 adds the extended block support and works against any 2.x service; against a service older than 2.5.0 the extended data simply reads zero. AdsGamepad 2.2.1 adds P_Ext_Battery for the battery fields a 2.6.0 or newer service fills. AdsGamepad 2.3.0 makes the version handshake retry until the service answers, so a service that starts after the PLC is still recognized. TcCOM module versions are independent; the module reads the same contract, and the [TcCOM page](tccom.md) holds the module version table. Any 2.x service serves any consumer, since the controller block never changed shape.
 

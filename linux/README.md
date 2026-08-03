@@ -7,8 +7,9 @@ the driver they need, so Linux is DualSense only. The pad connects over USB;
 on a kernel that provides the Bluetooth stack, which the standard Beckhoff
 kernel does not, the service also reads it over Bluetooth with the cable
 preferred. The ADS side is unchanged, the service registers port 25733 with
-the local TwinCAT router and the PLC library and TcCOM module work exactly
-as on Windows.
+the local TwinCAT router and the PLC library works exactly as on Windows.
+The compiled TcCOM module ships for the x64 systems only; on an ARM
+controller use the PLC library.
 
 ## Requirements
 
@@ -25,18 +26,23 @@ as on Windows.
 ## Install from the Debian package
 
 The simplest install is the Debian package, attached to each release on the
-GitHub Releases page of the repository. It can also be built locally on any
-Linux machine, from the repository root:
+GitHub Releases page of the repository. Releases from 2.12.0 on carry an
+amd64 package for the x86 controllers and an arm64 package for the ARM
+controllers such as the CX8200 and CX9240 series. The package can also be
+built locally on any Linux machine, from the repository root:
 
 ```
 dotnet publish src/AdsGamepadService -c Release -r linux-x64 --self-contained -o linux/publish
 sh linux/build-deb.sh
 ```
 
+For an ARM target, publish with -r linux-arm64 and name the architecture
+as the third argument: sh linux/build-deb.sh linux/publish linux arm64
+
 Copy the package to the target and install it:
 
 ```
-sudo apt install ./ads-gamepad-service_*_amd64.deb
+sudo apt install ./ads-gamepad-service_*.deb
 ```
 
 The package performs the same setup as the install script below: it creates
@@ -56,7 +62,8 @@ sudo apt purge ads-gamepad-service
 
 ## Build and install with the scripts
 
-On your build machine, from the repository root:
+On your build machine, from the repository root, with linux-arm64 in place
+of linux-x64 for an ARM target:
 
 ```
 dotnet publish src/AdsGamepadService -c Release -r linux-x64 --self-contained -o linux/publish

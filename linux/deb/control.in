@@ -2,7 +2,7 @@ Package: ads-gamepad-service
 Version: __VERSION__
 Section: admin
 Priority: optional
-Architecture: amd64
+Architecture: __ARCH__
 Depends: libc6
 Maintainer: Beckhoff USA Community
 Homepage: https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service

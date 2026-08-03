@@ -124,8 +124,19 @@ jobs:
         if: github.ref_type == 'tag'
         run: dotnet nuget push package-output\*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json --skip-duplicate
 
+  # Both Debian architectures build natively, so the test suite also runs
+  # on a real arm64 machine
   linux:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            rid: linux-x64
+            debarch: amd64
+          - runner: ubuntu-24.04-arm
+            rid: linux-arm64
+            debarch: arm64
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v5
 
@@ -137,7 +148,7 @@ jobs:
         run: dotnet test AdsGamepadService.sln -c Release
 
       - name: Publish service
-        run: dotnet publish src/AdsGamepadService -c Release -r linux-x64 --self-contained -o linux/publish
+        run: dotnet publish src/AdsGamepadService -c Release -r ${{ matrix.rid }} --self-contained -o linux/publish
 
       - name: Check the package version against the tag
         if: github.ref_type == 'tag'
@@ -150,9 +161,42 @@ jobs:
           fi
 
       - name: Build the Debian package
-        run: sh linux/build-deb.sh
+        run: sh linux/build-deb.sh linux/publish linux ${{ matrix.debarch }}
 
       - uses: actions/upload-artifact@v7
         with:
-          name: debian-package
+          name: debian-package-${{ matrix.debarch }}
           path: linux/*.deb
+
+  # A tag push creates a draft release with the Debian packages attached.
+  # The notes are written by hand in the draft before publishing.
+  release:
+    if: github.ref_type == 'tag'
+    needs: [build, linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: debian-package-*
+          path: dist
+          merge-multiple: true
+
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cd dist
+          sha256sum *.deb > SHA256SUMS
+          if gh api "repos/$GH_REPO/releases" --jq '.[].tag_name' | grep -qx "$GITHUB_REF_NAME"; then
+            echo "A release for $GITHUB_REF_NAME already exists, leaving it untouched."
+            exit 0
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            --verify-tag \
+            --draft \
+            --title "ADS Gamepad Service ${GITHUB_REF_NAME#v}" \
+            --notes "The release notes are written here before publishing." \
+            *.deb SHA256SUMS
