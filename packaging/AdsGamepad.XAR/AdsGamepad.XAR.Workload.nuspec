@@ -11,7 +11,7 @@
     <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
     <description>This workload installs the ADS Gamepad Service on a TwinCAT runtime system. The service reads game controllers and serves their state to the PLC over ADS. It supports Xbox controllers through the XInput interface and PlayStation 5 DualSense controllers over USB or Bluetooth, selectable per controller slot.</description>
     <copyright>(c) Beckhoff Automation LLC</copyright>
-    <tags>Beckhoff TwinCAT Workload CategoryBeckhoff&#160;USA&#160;Community&#160;&#124;&#160;Gamepad VariantXAR</tags>
+    <tags>Beckhoff TwinCAT Workload CategoryBeckhoff&#160;USA&#160;Community VariantXAR</tags>
     <packageTypes>
       <packageType name="Workload" />
     </packageTypes>

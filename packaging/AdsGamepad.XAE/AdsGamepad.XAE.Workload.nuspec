@@ -11,7 +11,7 @@
     <projectUrl>https://github.com/Beckhoff-USA-Community/ADS-Gamepad-Service</projectUrl>
     <description>This workload sets up an engineering system for the ADS Gamepad Service. It installs the AdsGamepad PLC library, the documentation, and the compiled Gamepad TcCOM module. The library lands in the XAE library repository ready to reference, and the module lands in the TwinCAT module repository ready to add to a project. The matching runtime workload installs the service itself.</description>
     <copyright>(c) Beckhoff Automation LLC</copyright>
-    <tags>Beckhoff TwinCAT Workload CategoryBeckhoff&#160;USA&#160;Community&#160;&#124;&#160;Gamepad VariantXAE</tags>
+    <tags>Beckhoff TwinCAT Workload CategoryBeckhoff&#160;USA&#160;Community VariantXAE</tags>
     <packageTypes>
       <packageType name="Workload" />
     </packageTypes>
