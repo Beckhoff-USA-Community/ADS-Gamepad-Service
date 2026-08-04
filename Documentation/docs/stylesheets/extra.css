@@ -2,7 +2,7 @@
    The shared look for community project sites: a near black header,
    the community red for links and accents, Inter for text and
    Consolas for code. To reuse this look on another project, copy this
-   file and the theme section of mkdocs.yml. */
+   file and the theme section of zensical.toml. */
 
 :root {
   --md-primary-fg-color: #1a1a1a;

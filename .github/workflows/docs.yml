@@ -27,7 +27,7 @@ jobs:
       - name: Build the site
         run: |
           pip install zensical==0.0.52
-          zensical build --clean --strict -f Documentation/mkdocs.yml
+          zensical build --clean --strict -f Documentation/zensical.toml
       - uses: actions/upload-pages-artifact@v4
         with:
           path: Documentation/site

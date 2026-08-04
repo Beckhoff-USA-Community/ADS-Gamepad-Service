@@ -301,7 +301,7 @@ _Repository/
 linux/publish/
 linux/*.deb
 
-# Local mkdocs build output
+# Local documentation build output
 Documentation/site/
 
 # Compiled libraries are ignored above, but the library package ships one
