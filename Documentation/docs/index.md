@@ -4,7 +4,7 @@ ADS Gamepad Service brings game controllers into TwinCAT projects as plain proce
 
 ## What it supports
 
-* The PlayStation 5 DualSense controller over USB or Bluetooth, including its battery state, touchpad and motion sensors. The standard Beckhoff RT Linux kernel has no Bluetooth stack, so on a stock Linux system the pad connects over USB.
+* The PlayStation 5 DualSense controller over USB or Bluetooth, including its battery state, touchpad and motion sensors. The standard Beckhoff RT Linux kernel has no Bluetooth stack, so on a stock Linux system the pad connects over USB; the [Linux installation page](installation/linux.md) shows how to add Bluetooth.
 * Xbox controllers through the Microsoft XInput interface, on Windows. Wireless operation works through the official Xbox Wireless Adapter.
 * Rumble commands from the PLC back to the controller.
 

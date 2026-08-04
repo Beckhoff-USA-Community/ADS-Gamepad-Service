@@ -7,7 +7,7 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 * The Windows application lives in src/AdsGamepadService and targets .NET 10, the current long term support release, with the Beckhoff ADS packages on the 7.0 line.
 * The application registers itself as an ADS server on port 25733. The PLC polls that server every cycle to read controller data and to write rumble commands. This wire format is treated as frozen. Any change to it will be versioned so that existing PLC programs keep working or fail loudly, never silently. That promise has been used once already: the PlayStation extra data arrived as a separate versioned extension block, and the original 32 byte block never changed shape.
 * Xbox controllers are read directly from C# through the Microsoft XInput API. The old C++ helper library is gone, so the project needs only the .NET SDK to build. Wireless Xbox controllers connect through the official Xbox Wireless Adapter and appear as normal XInput controllers, so the service needs no change; pairing Xbox pads with generic Bluetooth adapters proved unreliable in testing and is not a supported path.
-* A second input backend reads a PlayStation 5 DualSense controller over raw HID, selected per slot in the configuration file. On Windows the pad connects over USB or Bluetooth with the same slot setting, and the cable wins when both are present. On Linux it connects over USB. The backend has been verified with a real controller on Beckhoff hardware, on Windows and on Linux.
+* A second input backend reads a PlayStation 5 DualSense controller over raw HID, selected per slot in the configuration file. On Windows the pad connects over USB or Bluetooth with the same slot setting, and the cable wins when both are present. On Linux it connects over USB out of the box, and over Bluetooth after building the kernel modules the Linux installation page of the documentation describes. The backend has been verified with a real controller on Beckhoff hardware, on Windows and on Linux, including the ARM controllers.
 * A test suite under tests locks the exact numeric behavior of the controller math, including the deadzone handling and axis mapping the old helper shipped with, so a future change cannot silently alter what the PLC receives.
 * The PLC library sources are under plc. The library is called AdsGamepad since version 2.0.0 and covers plain controller I/O: buttons, sticks, triggers, battery state and rumble. Since 2.1.0 an optional second call per cycle reads the extended PlayStation data, and 2.2.1 adds the real battery percent and charging state. The helper blocks of the old library are gone, and MIGRATION.md at the repository root explains the move from XboxControllerUtilities, whose final release stays available under the old name.
 * A TwinCAT C++ module under tccom exposes a controller as plain process data. You add an instance, assign a task and link the variables, with no PLC code involved. It ships compiled and signed in the engineering workload, so it is ready to add to a project right after the install. The source stays in the repository for anyone who prefers to build and sign it themselves, and the README under tccom covers the build.
@@ -58,7 +58,7 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 ## Phase 7: Linux support (complete)
 
 * The service runs on Beckhoff RT Linux as a systemd service. The simplest install is the Debian package, which every release build produces and apt installs on the target. The linux directory also documents the manual path: publish, copy the directory over, and run the install script. Upgrades keep an edited configuration either way, and the ADS wire contract is unchanged, so the PLC library and the TcCOM module work exactly as on Windows.
-* Linux is DualSense over USB only. The service reads the pad over the hidraw interface with the same report decoding as on Windows. Xbox controllers need a kernel driver and Bluetooth of any kind needs the kernel Bluetooth stack; the Beckhoff kernel includes neither, so on Linux plan on a wired DualSense.
+* Linux is DualSense only. The service reads the pad over the hidraw interface with the same report decoding as on Windows. Xbox controllers need a kernel driver the Beckhoff kernel does not include. At this phase the pad connected over USB only; Bluetooth followed later and has its own section below.
 * The install runs the service under its own system account with device access granted through a udev rule, and registration with the TwinCAT router through membership in its access group.
 
 ## Extended controller data (complete)
@@ -67,9 +67,19 @@ ADS Gamepad Service is the continuation of the TC_XboxController project under a
 * Battery detail followed with service 2.6.0 and library 2.2.1: the real charge percent and charging state of the pad, verified against a complete charge cycle. The classic battery bits in the controller block are unchanged.
 * Service 2.7.0 adds DualSense over Bluetooth on Windows. Pair the pad once through the Windows Bluetooth settings and the same slot setting covers both transports; the cable wins when both are present. The wire contract is unchanged.
 
-## Later: Bluetooth on Linux
+## Bluetooth on Linux (complete)
 
-* On Linux the DualSense stays on USB for now. Bluetooth needs the kernel Bluetooth stack, which the Beckhoff kernel does not include, so this waits on a kernel change rather than on service code; the Bluetooth handling in the service is already shared between the platforms.
+* The service reads a DualSense over Bluetooth on Linux since release 2.8.0. The Bluetooth handling is shared between the platforms, so the Linux side behaves exactly like Windows: the same slot setting covers both transports and the cable wins when both are present.
+* The standard Beckhoff kernel does not include the Bluetooth stack, so Bluetooth needs kernel modules built once from the matching kernel source. The Linux installation page of the documentation walks through the whole path, from building the modules to pairing the pad, verified end to end on real hardware. A stock system stays on the cable until those modules are in place.
+
+## Compiled TcCOM module (complete)
+
+* The engineering workload installs the TcCOM module compiled and signed since release 2.9.0, so it is ready to add to a project right after the install. The source stays in the repository for anyone who prefers to build and sign the module themselves.
+
+## ARM controllers (complete)
+
+* Release 2.12.0 extends Linux support to the ARM based controllers, the CX8200 series and the CX9240, verified on real hardware. Every release attaches Debian packages for both amd64 and arm64, and the TcCOM module ships an ARM build alongside the others.
+* The current ARM kernel image needs one rebuilt module before the pad can be read, because it ships without the raw HID layer. The Linux installation page of the documentation has the steps.
 
 ## TwinCAT/BSD
 

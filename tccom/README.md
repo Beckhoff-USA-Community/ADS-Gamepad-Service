@@ -4,7 +4,7 @@ This directory holds a TwinCAT C++ module (TcCOM) that reads gamepad data from t
 
 ## Compiled module or source
 
-The engineering workload installs the module compiled and signed into the TwinCAT module repository, ready to add to a project, with builds for TwinCAT RT x86, TwinCAT RT x64 and TwinCAT OS x64. This directory is for everyone else: audit the code, extend it, or build for a platform the packages do not cover. TwinCAT loads a C++ module, a TMX file, on Windows only when it is signed with a certificate the target trusts, so a self built module must be signed with your own TwinCAT user certificate.
+The engineering workload installs the module compiled and signed into the TwinCAT module repository, ready to add to a project, with builds for TwinCAT RT x86, TwinCAT RT x64, TwinCAT OS x64 and Beckhoff RT Linux on x64 and ARM. This directory is for everyone else: audit the code, extend it, or build for a platform the packages do not cover. TwinCAT loads a C++ module, a TMX file, on Windows only when it is signed with a certificate the target trusts, so a self built module must be signed with your own TwinCAT user certificate.
 
 ## Requirements
 
