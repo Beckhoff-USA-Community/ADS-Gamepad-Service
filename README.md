@@ -8,25 +8,18 @@ The TcCOM module turns a controller into linkable process data with no PLC code 
 
 ## Installing on Windows
 
-The project ships as TwinCAT packages on the GitHub package feed of the Beckhoff USA Community organization. Four steps: create a token, add the feed, install the workload that matches the system, set the controller type.
+The project ships as TwinCAT packages on the GitHub package feed of the Beckhoff USA Community organization.
 
-**1. Create a token.** GitHub requires a login for its package feeds, even for public packages. In your GitHub account under Developer settings, create a personal access token of the classic type with the read:packages scope. The token starts with ghp_.
-
-**2. Add the feed** from an administrator PowerShell, and enter the token when prompted for a password:
+**1. Add the feed.** From an administrator PowerShell, and entering your GitHub personal access token when it prompts for a password:
 
 ```powershell
 tcpkg config unset -n VerifySignatures
 tcpkg source add -n "Beckhoff-USA-Community" -s https://nuget.pkg.github.com/Beckhoff-USA-Community/index.json -u <your GitHub user name> --take 100
 ```
 
-Both settings are required, not optional, and the order matters:
+You only do this once per machine. [Adding the package feed](https://github.com/Beckhoff-USA-Community/BAUS_Community_General_Assets/blob/main/feed-setup.md) walks through creating the token, explains why both commands are needed and why the order matters, and covers the common failures.
 
-* `tcpkg config unset -n VerifySignatures` allows packages that are not signed by Beckhoff. Community packages carry no Beckhoff signature, including the disclaimer package the feed presents while it is being added, so verification must be off before the feed is added.
-* `--take 100` limits search requests to 100 results per page. GitHub rejects anything larger, while the TwinCAT Package Manager asks for 500 by default. Without this option, adding the feed fails with the error "Failed to retrieve metadata from source".
-
-Adding the feed shows the community disclaimer; accept it to continue.
-
-**3. Install.** The runtime workload puts the service on the system that has the controllers attached. The engineering workload puts the PLC library, the compiled TcCOM module and the documentation on the system that runs XAE. Run the line that matches the system, or both on a machine that does both jobs:
+**2. Install.** The runtime workload puts the service on the system that has the controllers attached. The engineering workload puts the PLC library, the compiled TcCOM module and the documentation on the system that runs XAE. Run the line that matches the system, or both on a machine that does both jobs:
 
 ```powershell
 tcpkg install Beckhoff-USA-Community.AdsGamepad.XAR -y
@@ -35,9 +28,7 @@ tcpkg install Beckhoff-USA-Community.AdsGamepad.XAE -y
 
 After the install the service is running, the AdsGamepad library is in the XAE library repository ready to reference, and the Gamepad TcCOM module is in the TwinCAT module repository ready to add to a project.
 
-**4. Set the controller type.** The service ships configured for one PlayStation DualSense controller, so a DualSense on a USB cable works right away. To read Xbox controllers instead, set the slots to XInput in C:\Program Files\Beckhoff USA Community\ADS Gamepad\Service\appsettings.json and restart the service with Restart-Service AdsGamepadService. The service page of the documentation covers every setting.
-
-If adding the feed fails, confirm the token is the classic type (it starts with ghp_), that it has the read:packages scope, and that it has not expired.
+**3. Set the controller type.** The service ships configured for one PlayStation DualSense controller, so a DualSense on a USB cable works right away. To read Xbox controllers instead, set the slots to XInput in C:\Program Files\Beckhoff USA Community\ADS Gamepad\Service\appsettings.json and restart the service with Restart-Service AdsGamepadService. The service page of the documentation covers every setting.
 
 ## Installing on Beckhoff RT Linux
 
